@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Juego arcade de naves (shooter vertical) híbrido con Capacitor",
+  "type": "module",
   "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
     "serve": "npx http-server www -p 8080 -c-1",
     "sync": "npx cap sync android",
     "open": "npx cap open android",
