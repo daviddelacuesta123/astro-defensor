@@ -78,3 +78,42 @@ test('el escudo absorbe un golpe sin perder vida', () => {
   assert.deepEqual([j.vidas, j.escudo], [3, false]);
   assert.ok(j.invulnerable > 0);
 });
+
+// Recoge los disparos de la primera ráfaga (a los 0.18 s).
+function primeraRafaga(nivel) {
+  const j = crearJugador({ x: 180, y: 560 });
+  j.nivelDisparo = nivel;
+  const disparos = [];
+  j.update(0.2, { activo: false, x: 0, y: 0 }, ALTO, (x, y, vx) => disparos.push([x, y, vx]));
+  return { j, disparos };
+}
+
+test('nivel 1: un disparo recto', () => {
+  const { j, disparos } = primeraRafaga(1);
+  assert.deepEqual(disparos, [[180, 560 - j.alto / 2, 0]]);
+});
+
+test('nivel 2: dos disparos paralelos', () => {
+  const { j, disparos } = primeraRafaga(2);
+  const punta = 560 - j.alto / 2;
+  assert.deepEqual(disparos, [[174, punta, 0], [186, punta, 0]]);
+});
+
+test('nivel 3: tres disparos en abanico', () => {
+  const { j, disparos } = primeraRafaga(3);
+  const punta = 560 - j.alto / 2;
+  assert.deepEqual(disparos, [[180, punta, 0], [174, punta, -120], [186, punta, 120]]);
+});
+
+test('perder una vida baja un nivel de disparo, sin bajar de 1', () => {
+  const j = crearJugador({ x: 180, y: 560 });
+  assert.equal(j.nivelDisparo, 1);
+  j.nivelDisparo = 3;
+  j.recibirGolpe();
+  assert.equal(j.nivelDisparo, 2);
+  j.invulnerable = 0;
+  j.recibirGolpe();
+  j.invulnerable = 0;
+  j.recibirGolpe();
+  assert.equal(j.nivelDisparo, 1);
+});

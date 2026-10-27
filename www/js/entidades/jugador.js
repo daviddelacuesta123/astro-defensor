@@ -7,6 +7,13 @@ const SUAVIZADO = 18;
 const INVULNERABLE_GOLPE = 2;
 const INVULNERABLE_ESCUDO = 1;
 
+// Ráfaga por nivel de disparo: [desplazamiento x, velocidad horizontal] de cada bala.
+const RAFAGAS = {
+  1: [[0, 0]],
+  2: [[-6, 0], [6, 0]],
+  3: [[0, 0], [-6, -120], [6, 120]],
+};
+
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 
 export function crearJugador({ x, y }) {
@@ -20,8 +27,9 @@ export function crearJugador({ x, y }) {
     vidas: 3,
     invulnerable: 0,
     escudo: false,
+    nivelDisparo: 1,
 
-    // Devuelve true si el golpe costó una vida.
+    // Devuelve true si el golpe costó una vida (y un nivel de disparo).
     recibirGolpe() {
       if (this.invulnerable > 0) return false;
       if (this.escudo) {
@@ -30,6 +38,7 @@ export function crearJugador({ x, y }) {
         return false;
       }
       this.vidas--;
+      this.nivelDisparo = Math.max(1, this.nivelDisparo - 1);
       this.invulnerable = INVULNERABLE_GOLPE;
       return true;
     },
@@ -49,7 +58,8 @@ export function crearJugador({ x, y }) {
       enfriamiento -= dt;
       if (enfriamiento <= 0) {
         enfriamiento += CADENCIA;
-        disparar(this.x, this.y - this.alto / 2);
+        const punta = this.y - this.alto / 2;
+        for (const [dx, vx] of RAFAGAS[this.nivelDisparo]) disparar(this.x + dx, punta, vx);
       }
     },
   };
