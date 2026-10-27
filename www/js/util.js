@@ -11,3 +11,13 @@ export function clampDt(ms) {
 export function altoLogico(anchoPx, altoPx) {
   return Math.max(ALTO_MIN, Math.round(360 * altoPx / anchoPx));
 }
+
+// Velocidad (vx, vy) de módulo `rapidez` que va desde un punto hacia otro.
+// Si ambos puntos coinciden, apunta hacia abajo para no dividir entre cero.
+export function apuntar(desdeX, desdeY, haciaX, haciaY, rapidez) {
+  const dx = haciaX - desdeX;
+  const dy = haciaY - desdeY;
+  const dist = Math.hypot(dx, dy);
+  if (dist === 0) return { vx: 0, vy: rapidez };
+  return { vx: dx / dist * rapidez, vy: dy / dist * rapidez };
+}

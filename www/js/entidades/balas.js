@@ -1,28 +1,36 @@
-import { COLORS } from '../config.js';
+import { W, COLORS } from '../config.js';
 
 const VEL_JUGADOR = -480;
+const MARGEN = 10;
 
-export function crearBalas() {
+// Grupo de balas con el mismo aspecto (las del jugador, las de los enemigos...).
+export function crearBalas({ color = COLORS.accent, ancho = 2, largo = 8 } = {}) {
   const lista = [];
 
   return {
     lista,
 
-    disparar(x, y, vy = VEL_JUGADOR) {
-      lista.push({ x, y, vy });
+    disparar(x, y, vy = VEL_JUGADOR, vx = 0) {
+      lista.push({ x, y, vx, vy });
     },
 
-    update(dt) {
-      for (const b of lista) b.y += b.vy * dt;
-      // Elimina las que salieron por arriba, recorriendo al revés para no saltarse ninguna.
+    update(dt, alto = Infinity) {
+      for (const b of lista) {
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+      }
+      // Elimina las que salieron de la pantalla, recorriendo al revés para no saltarse ninguna.
       for (let i = lista.length - 1; i >= 0; i--) {
-        if (lista[i].y < -10) lista.splice(i, 1);
+        const b = lista[i];
+        if (b.y < -MARGEN || b.y > alto + MARGEN || b.x < -MARGEN || b.x > W + MARGEN) lista.splice(i, 1);
       }
     },
 
     draw(ctx) {
-      ctx.fillStyle = COLORS.accent;
-      for (const b of lista) ctx.fillRect(Math.round(b.x) - 1, Math.round(b.y) - 4, 2, 8);
+      ctx.fillStyle = color;
+      for (const b of lista) {
+        ctx.fillRect(Math.round(b.x - ancho / 2), Math.round(b.y - largo / 2), ancho, largo);
+      }
     },
   };
 }
