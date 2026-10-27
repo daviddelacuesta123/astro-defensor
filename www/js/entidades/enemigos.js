@@ -1,5 +1,6 @@
 import { TIPOS_ENEMIGO } from '../datos/enemigos.js';
 import { apuntar } from '../util.js';
+import { SPRITES_ENEMIGO, dibujarSprite } from '../graficos/sprites.js';
 
 // entorno = { jugador: {x, y}, disparar(x, y, vy, vx) }
 export function crearEnemigo(tipo, x, y) {
@@ -65,6 +66,10 @@ export function crearFlota() {
       for (let i = lista.length - 1; i >= 0; i--) {
         if (lista[i].y > alto + 30) lista.splice(i, 1);
       }
+    },
+
+    draw(ctx) {
+      for (const e of lista) dibujarSprite(ctx, SPRITES_ENEMIGO[e.tipo], e.x, e.y);
     },
   };
 }
