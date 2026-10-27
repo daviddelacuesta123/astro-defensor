@@ -22,3 +22,13 @@ test('cada píxel de un sprite tiene color en su paleta o es transparente', () =
     }
   }
 });
+
+test('cada tipo de enemigo tiene sprite del mismo tamaño que su caja', async () => {
+  const { TIPOS_ENEMIGO } = await import('../www/js/datos/enemigos.js');
+  for (const [tipo, def] of Object.entries(TIPOS_ENEMIGO)) {
+    const s = sprites.SPRITES_ENEMIGO?.[tipo];
+    assert.ok(s, `falta sprite para ${tipo}`);
+    assert.equal(s.filas[0].length * s.escala, def.ancho, `ancho de ${tipo}`);
+    assert.equal(s.filas.length * s.escala, def.alto, `alto de ${tipo}`);
+  }
+});
