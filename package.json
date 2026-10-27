@@ -1,0 +1,19 @@
+{
+  "name": "astro-defensor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Juego arcade de naves (shooter vertical) híbrido con Capacitor",
+  "scripts": {
+    "serve": "npx http-server www -p 8080 -c-1",
+    "sync": "npx cap sync android",
+    "open": "npx cap open android",
+    "android": "npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  }
+}

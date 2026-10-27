@@ -1,0 +1,8 @@
+{
+  "appId": "com.david.astrodefensor",
+  "appName": "Astro Defensor",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#05060f"
+  }
+}
