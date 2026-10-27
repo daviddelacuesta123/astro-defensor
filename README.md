@@ -21,7 +21,9 @@ npm run android  # sincroniza www/ con Android y abre Android Studio
 - `www/js/` — código del juego (módulos ES, sin bundler)
   - `escenas/` — gestor de escenas y pantallas (por ahora: `juego`)
   - `entrada/` — control táctil (coordenadas lógicas y estado del dedo)
-  - `entidades/` — nave del jugador y balas
+  - `entidades/` — nave del jugador, enemigos y balas
+  - `datos/` — tipos de enemigos y oleadas
+  - `sistemas/` — director de oleadas
   - `graficos/` — sprites en pixel art
   - `fondo/` — fondo de estrellas
 - `tests/` — pruebas de la lógica pura
