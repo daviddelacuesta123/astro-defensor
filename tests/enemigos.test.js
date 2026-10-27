@@ -57,3 +57,11 @@ test('la flota elimina los enemigos que salen por abajo', () => {
   assert.equal(flota.lista.length, 1);
   assert.equal(flota.lista[0].x, 200);
 });
+
+test('el tirador se retira hacia abajo tras 6 s en su puesto', () => {
+  const e = crearEnemigo('tirador', 180, 120);
+  simular(e, 5.9);
+  assert.ok(Math.abs(e.y - 120) < 1e-9);
+  simular(e, 1);
+  assert.ok(e.y > 120 + 30, `debería estar bajando: ${e.y}`);
+});

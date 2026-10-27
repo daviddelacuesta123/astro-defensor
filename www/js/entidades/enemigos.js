@@ -7,6 +7,7 @@ export function crearEnemigo(tipo, x, y) {
   if (!def) throw new Error(`Tipo de enemigo desconocido: ${tipo}`);
   const x0 = x;
   let t = 0;
+  let enPuesto = 0;
   let enfriamiento = def.disparo?.cadencia ?? 0;
 
   return {
@@ -25,7 +26,13 @@ export function crearEnemigo(tipo, x, y) {
         this.y += def.vel * dt;
         this.x = x0 + Math.sin(t * def.frecuencia) * def.amplitud;
       } else if (def.movimiento === 'estacionar') {
-        this.y = Math.min(def.alturaFija, this.y + def.vel * dt);
+        if (this.y < def.alturaFija) {
+          this.y = Math.min(def.alturaFija, this.y + def.vel * dt);
+        } else if (enPuesto < def.permanencia) {
+          enPuesto += dt;
+        } else {
+          this.y += def.vel * dt;
+        }
       } else {
         this.y += def.vel * dt;
       }

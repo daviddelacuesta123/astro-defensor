@@ -1,5 +1,6 @@
 // Tipos de enemigos del Enjambre Vex.
-// movimiento: 'recto' (baja sin parar), 'zigzag' (baja oscilando), 'estacionar' (baja hasta `alturaFija` y se queda).
+// movimiento: 'recto' (baja sin parar), 'zigzag' (baja oscilando),
+// 'estacionar' (baja hasta `alturaFija`, se queda `permanencia` s y luego se retira hacia abajo).
 // disparo: null o { cadencia (s), rapidez } — los disparos van apuntados al jugador.
 // ancho/alto coinciden con el tamaño de su sprite.
 export const TIPOS_ENEMIGO = {
@@ -13,6 +14,6 @@ export const TIPOS_ENEMIGO = {
   },
   tirador: {
     vida: 3, puntos: 250, vel: 70, ancho: 33, alto: 30,
-    movimiento: 'estacionar', alturaFija: 120, disparo: { cadencia: 1.4, rapidez: 170 },
+    movimiento: 'estacionar', alturaFija: 120, permanencia: 6, disparo: { cadencia: 1.4, rapidez: 170 },
   },
 };
