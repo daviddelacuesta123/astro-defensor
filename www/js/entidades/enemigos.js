@@ -19,9 +19,11 @@ export function crearEnemigo(tipo, x, y) {
     puntos: def.puntos,
     ancho: def.ancho,
     alto: def.alto,
+    golpeado: 0,
 
     update(dt, entorno) {
       t += dt;
+      this.golpeado = Math.max(0, this.golpeado - dt);
 
       if (def.movimiento === 'zigzag') {
         this.y += def.vel * dt;

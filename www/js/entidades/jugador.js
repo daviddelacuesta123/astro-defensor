@@ -4,6 +4,8 @@ import { W } from '../config.js';
 const DESFASE = 60;
 const CADENCIA = 0.18;
 const SUAVIZADO = 18;
+const INVULNERABLE_GOLPE = 2;
+const INVULNERABLE_ESCUDO = 1;
 
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -15,9 +17,26 @@ export function crearJugador({ x, y }) {
     y,
     ancho: 30,
     alto: 33,
+    vidas: 3,
+    invulnerable: 0,
+    escudo: false,
+
+    // Devuelve true si el golpe costó una vida.
+    recibirGolpe() {
+      if (this.invulnerable > 0) return false;
+      if (this.escudo) {
+        this.escudo = false;
+        this.invulnerable = INVULNERABLE_ESCUDO;
+        return false;
+      }
+      this.vidas--;
+      this.invulnerable = INVULNERABLE_GOLPE;
+      return true;
+    },
 
     update(dt, puntero, alto, disparar, sensibilidad = 1) {
       if (dt <= 0) return;
+      this.invulnerable = Math.max(0, this.invulnerable - dt);
 
       if (puntero.activo) {
         const factor = 1 - Math.exp(-SUAVIZADO * sensibilidad * dt);

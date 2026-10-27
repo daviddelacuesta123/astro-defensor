@@ -58,3 +58,23 @@ test('un frame con dt = 0 no mueve ni dispara', () => {
   for (let i = 0; i < 100; i++) j.update(0, dedo(0, 0), ALTO, () => disparos++);
   assert.deepEqual([j.x, j.y, disparos], [180, 560, 0]);
 });
+
+test('recibir un golpe quita una vida y da 2 s de invulnerabilidad', () => {
+  const j = crearJugador({ x: 180, y: 560 });
+  assert.equal(j.vidas, 3);
+  assert.equal(j.recibirGolpe(), true);
+  assert.equal(j.vidas, 2);
+  assert.equal(j.recibirGolpe(), false, 'el segundo golpe seguido no cuenta');
+  assert.equal(j.vidas, 2);
+  simular(j, 2.1, { activo: false, x: 0, y: 0 });
+  assert.equal(j.recibirGolpe(), true);
+  assert.equal(j.vidas, 1);
+});
+
+test('el escudo absorbe un golpe sin perder vida', () => {
+  const j = crearJugador({ x: 180, y: 560 });
+  j.escudo = true;
+  assert.equal(j.recibirGolpe(), false);
+  assert.deepEqual([j.vidas, j.escudo], [3, false]);
+  assert.ok(j.invulnerable > 0);
+});
