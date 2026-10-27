@@ -1,6 +1,9 @@
 import { W, view, COLORS } from '../config.js';
 import { crearJugador } from '../entidades/jugador.js';
 import { crearBalas } from '../entidades/balas.js';
+import { crearFlota } from '../entidades/enemigos.js';
+import { crearDirector } from '../sistemas/oleadas.js';
+import { OLEADAS_PRUEBA } from '../datos/oleadas.js';
 import { NAVE_AD7, dibujarSprite } from '../graficos/sprites.js';
 
 // Llama del propulsor: dos chorros bajo los motores que parpadean.
@@ -17,23 +20,39 @@ function dibujarLlama(ctx, x, y) {
 export function escenaJuego({ estrellas, puntero }) {
   let jugador;
   let balas;
+  let balasEnemigas;
+  let flota;
+  let director;
+  let entorno;
   const disparar = (x, y) => balas.disparar(x, y);
 
   return {
     entrar() {
       jugador = crearJugador({ x: W / 2, y: view.H - 100 });
       balas = crearBalas();
+      balasEnemigas = crearBalas({ color: COLORS.danger, ancho: 3, largo: 6 });
+      flota = crearFlota();
+      director = crearDirector(OLEADAS_PRUEBA);
+      entorno = {
+        jugador,
+        disparar: (x, y, vy, vx) => balasEnemigas.disparar(x, y, vy, vx),
+      };
     },
 
     update(dt) {
       estrellas.update(dt, view.H);
       jugador.update(dt, puntero, view.H, disparar);
-      balas.update(dt);
+      director.update(dt, flota);
+      flota.update(dt, entorno, view.H);
+      balas.update(dt, view.H);
+      balasEnemigas.update(dt, view.H);
     },
 
     draw(ctx) {
       estrellas.draw(ctx);
+      flota.draw(ctx);
       balas.draw(ctx);
+      balasEnemigas.draw(ctx);
       dibujarLlama(ctx, jugador.x, jugador.y + 16);
       dibujarSprite(ctx, NAVE_AD7, jugador.x, jugador.y);
     },

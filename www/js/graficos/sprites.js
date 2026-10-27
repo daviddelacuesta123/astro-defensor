@@ -27,6 +27,61 @@ export const NAVE_AD7 = {
   ],
 };
 
+// Enemigos del Enjambre Vex: miran hacia abajo, hacia el jugador.
+
+export const VEX_EXPLORADOR = {
+  escala: 3,
+  paleta: { R: COLORS.danger, Y: COLORS.warn },
+  filas: [
+    '.R.....R.',
+    'RR.RRR.RR',
+    'RRRRRRRRR',
+    'RRYRRRYRR',
+    '.RRRRRRR.',
+    '..RR.RR..',
+    '..R...R..',
+    '.R.....R.',
+  ],
+};
+
+export const VEX_ZIGZAG = {
+  escala: 3,
+  paleta: { P: COLORS.pink, M: '#5a1a4a' },
+  filas: [
+    'P.........P',
+    'PP...P...PP',
+    'PPPPPPPPPPP',
+    '.PPMPPPMPP.',
+    '..PPPPPPP..',
+    '...P.P.P...',
+    '..P.....P..',
+    '...P...P...',
+  ],
+};
+
+export const VEX_TIRADOR = {
+  escala: 3,
+  paleta: { Y: COLORS.warn, R: COLORS.danger, K: '#3a0a14' },
+  filas: [
+    '..YYYYYYY..',
+    '.YYRRRRRYY.',
+    'YYRRKKKRRYY',
+    'YRRKKYKKRRY',
+    'YRRKKKKKRRY',
+    '.YRRRRRRRY.',
+    '..YYRRRYY..',
+    '...YYRYY...',
+    '....YRY....',
+    '.....R.....',
+  ],
+};
+
+export const SPRITES_ENEMIGO = {
+  explorador: VEX_EXPLORADOR,
+  zigzag: VEX_ZIGZAG,
+  tirador: VEX_TIRADOR,
+};
+
 // Dibuja el sprite centrado en (x, y).
 export function dibujarSprite(ctx, sprite, x, y) {
   const { filas, paleta, escala } = sprite;
