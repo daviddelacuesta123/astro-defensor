@@ -8,6 +8,8 @@ import { crearDirector } from '../sistemas/oleadas.js';
 import { impactarEnemigos, golpearJugador } from '../sistemas/colisiones.js';
 import { OLEADAS_PRUEBA } from '../datos/oleadas.js';
 import { NAVE_AD7, dibujarSprite } from '../graficos/sprites.js';
+import { crearBoton, dibujarBoton, dibujarVelo } from '../graficos/ui.js';
+import { dibujarHUD } from '../graficos/hud.js';
 
 const COLOR_EXPLOSION = { explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
 
@@ -44,7 +46,15 @@ export function escenaJuego({ estrellas, puntero }) {
   let puntos;
   let destello;
   let t;
+  // 'jugando' | 'pausa'
+  let estado;
   const disparar = (x, y, vx) => balas.disparar(x, y, undefined, vx);
+  const botonPausa = crearBoton({ texto: '', x: W - 24, y: 24, ancho: 32, alto: 32 });
+  // Se calculan al usarlos porque dependen del alto de la pantalla.
+  const botonesPausa = () => [
+    crearBoton({ texto: 'CONTINUAR', x: W / 2, y: view.H * 0.48, ancho: 190, alto: 44 }),
+    crearBoton({ texto: 'REINICIAR', x: W / 2, y: view.H * 0.48 + 60, ancho: 190, alto: 44 }),
+  ];
 
   function destruir(enemigo) {
     puntos += enemigo.puntos;
@@ -75,9 +85,30 @@ export function escenaJuego({ estrellas, puntero }) {
       puntos = 0;
       destello = 0;
       t = 0;
+      estado = 'jugando';
+    },
+
+    // El gestor lo avisa cuando la app pasa a segundo plano.
+    pausar() {
+      if (estado === 'jugando') estado = 'pausa';
     },
 
     update(dt) {
+      const toques = puntero.tomarToques();
+
+      if (estado === 'pausa') {
+        const [continuar, reiniciar] = botonesPausa();
+        for (const { x, y } of toques) {
+          if (continuar.contiene(x, y)) estado = 'jugando';
+          else if (reiniciar.contiene(x, y)) this.entrar();
+        }
+        return;
+      }
+      if (toques.some(({ x, y }) => botonPausa.contiene(x, y))) {
+        estado = 'pausa';
+        return;
+      }
+
       t += dt;
       destello = Math.max(0, destello - dt);
       estrellas.update(dt, view.H);
@@ -126,6 +157,13 @@ export function escenaJuego({ estrellas, puntero }) {
         ctx.fillStyle = COLORS.text;
         ctx.fillRect(0, 0, W, view.H);
         ctx.globalAlpha = 1;
+      }
+
+      dibujarHUD(ctx, { puntos, vidas: jugador.vidas }, botonPausa);
+
+      if (estado === 'pausa') {
+        dibujarVelo(ctx, W, view.H, 'PAUSA');
+        for (const boton of botonesPausa()) dibujarBoton(ctx, boton);
       }
     },
   };
