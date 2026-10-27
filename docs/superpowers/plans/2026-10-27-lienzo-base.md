@@ -16,7 +16,7 @@
 - Fondo `#05060f`; paleta neón de `COLORS` en `config.js`.
 - Sin bundler ni librerías de juego. Sin dependencias nuevas en `package.json`.
 - Código e identificadores en español cuando sean nombres de dominio (escenas, estrellas); comentarios en español.
-- Commits en español con prefijos `feat:`, `fix:`, `docs:`, `chore:`, `test:`; terminan con `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- Commits en español con prefijos `feat:`, `fix:`, `docs:`, `chore:`, `test:`; a nombre de David, sin líneas de coautoría ni atribución.
 - Rama `feature/lienzo-base` desde `main`; PR a `main`; nunca mergear.
 
 ## Review Focus
@@ -110,5 +110,5 @@
 - [ ] **Step 3:** `npm run serve` y abrir `http://localhost:8080` en modo dispositivo móvil del navegador: se ven estrellas cayendo a tres velocidades y el título nítido (sin borrosidad con DPR 3); al rotar/cambiar tamaño no quedan zonas sin estrellas; la consola no tiene errores.
 - [ ] **Step 4:** Commit `feat: integrar loop, gestor de escenas y escena provisional`.
 - [ ] **Step 5:** Commit `docs: instrucciones de desarrollo en el README`.
-- [ ] **Step 6:** `git push -u origin feature/lienzo-base` y `gh pr create --base main` con título `Lienzo base: canvas, loop, escenas y estrellas`, cuerpo con resumen, cómo probar (`npm test`, `npm run serve`) y la línea de atribución de Claude Code.
+- [ ] **Step 6:** `git push -u origin feature/lienzo-base` y `gh pr create --base main` con título `Lienzo base: canvas, loop, escenas y estrellas`, cuerpo con resumen, cómo probar (`npm test`, `npm run serve`), sin atribución.
 - [ ] **Step 7:** Esperar aprobación de David. No mergear.
