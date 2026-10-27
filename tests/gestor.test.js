@@ -66,3 +66,17 @@ test('update y draw sin escena actual no hacen nada', () => {
   gestor.update(0.016);
   gestor.draw({});
 });
+
+test('enviar avisa un evento solo a la escena actual', () => {
+  const recibidos = [];
+  const gestor = crearGestorEscenas();
+  gestor.registrar('a', { pausar: (motivo) => recibidos.push(['a', motivo]) });
+  gestor.registrar('b', { pausar: (motivo) => recibidos.push(['b', motivo]) });
+  gestor.registrar('c', {});
+  gestor.enviar('pausar', 'nadie');
+  gestor.ir('b');
+  gestor.enviar('pausar', 'fondo');
+  gestor.ir('c');
+  gestor.enviar('pausar', 'fondo');
+  assert.deepEqual(recibidos, [['b', 'fondo']]);
+});

@@ -36,3 +36,14 @@ test('al levantar el primer dedo, otro puede tomar el control', () => {
   p.bajar(2, 50, 60);
   assert.deepEqual([p.activo, p.x, p.y], [true, 50, 60]);
 });
+
+test('tomarToques devuelve los toques nuevos y los vacía', () => {
+  const p = crearEstadoPuntero();
+  p.bajar(1, 10, 20);
+  p.mover(1, 50, 60);
+  p.subir(1);
+  p.bajar(2, 30, 40);
+  p.bajar(3, 99, 99);
+  assert.deepEqual(p.tomarToques(), [{ x: 10, y: 20 }, { x: 30, y: 40 }]);
+  assert.deepEqual(p.tomarToques(), []);
+});

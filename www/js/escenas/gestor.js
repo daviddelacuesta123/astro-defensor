@@ -20,6 +20,11 @@ export function crearGestorEscenas() {
       escena.entrar?.(params);
     },
 
+    // Avisa un evento (p. ej. 'pausar' al pasar a segundo plano) a la escena actual.
+    enviar(evento, ...args) {
+      escena?.[evento]?.(...args);
+    },
+
     update(dt) {
       escena?.update?.(dt);
     },

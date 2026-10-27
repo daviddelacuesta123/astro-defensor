@@ -12,6 +12,7 @@ export function aLogicas(clientX, clientY, anchoPx, altoPx, H) {
 // los demás se ignoran hasta que ese se levante.
 export function crearEstadoPuntero() {
   let idActual = null;
+  let toques = [];
 
   return {
     activo: false,
@@ -24,6 +25,14 @@ export function crearEstadoPuntero() {
       this.activo = true;
       this.x = x;
       this.y = y;
+      toques.push({ x, y });
+    },
+
+    // Toques nuevos desde la última llamada (para botones). Los consume.
+    tomarToques() {
+      const nuevos = toques;
+      toques = [];
+      return nuevos;
     },
 
     mover(id, x, y) {
