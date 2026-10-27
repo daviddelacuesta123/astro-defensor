@@ -13,8 +13,8 @@ export function crearJugador({ x, y }) {
   return {
     x,
     y,
-    ancho: 20,
-    alto: 22,
+    ancho: 30,
+    alto: 33,
 
     update(dt, puntero, alto, disparar, sensibilidad = 1) {
       if (dt <= 0) return;

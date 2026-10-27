@@ -4,7 +4,7 @@ import { COLORS } from '../config.js';
 // `escala` es el tamaño de cada píxel en unidades del mundo.
 
 export const NAVE_AD7 = {
-  escala: 2,
+  escala: 3,
   paleta: {
     W: COLORS.text,
     A: COLORS.accent,
