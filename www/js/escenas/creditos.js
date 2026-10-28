@@ -12,12 +12,16 @@ const ESTILOS = {
   espacio: { alto: 30 },
 };
 const ALTO_TEXTO = CREDITOS.reduce((total, l) => total + ESTILOS[l.estilo].alto, 0);
+// Franja inferior reservada a la nave y al aviso: el texto aparece por encima, con un fundido.
+const FRANJA_INFERIOR = 140;
+const FUNDIDO = 50;
 
 // Créditos ocultos: el texto sube sobre las estrellas mientras la nave dorada pasea abajo.
 // Cualquier toque vuelve al menú.
 export function escenaCreditos({ estrellas, puntero, irA, sonar = () => {} }) {
   let t = 0;
-  const inicio = () => view.H + 20;
+  const limite = () => view.H - FRANJA_INFERIOR;
+  const inicio = () => limite() + 10;
 
   return {
     // Posición y de la primera línea.
@@ -51,13 +55,16 @@ export function escenaCreditos({ estrellas, puntero, irA, sonar = () => {} }) {
       let y = this.desplazamiento;
       for (const linea of CREDITOS) {
         const estilo = ESTILOS[linea.estilo];
-        if (linea.texto && y > -40 && y < view.H + 40) {
+        const alfa = Math.min(1, (limite() - y) / FUNDIDO);
+        if (linea.texto && y > -40 && alfa > 0) {
+          ctx.globalAlpha = alfa;
           ctx.font = estilo.fuente;
           ctx.fillStyle = estilo.color;
           ctx.fillText(linea.texto, W / 2, y);
         }
         y += estilo.alto;
       }
+      ctx.globalAlpha = 1;
 
       // La nave dorada vuela de lado a lado bajo el texto.
       dibujarSprite(ctx, NAVE_DORADA, W / 2 + Math.sin(t * 0.8) * 120, view.H - 90 + Math.sin(t * 2) * 6);
