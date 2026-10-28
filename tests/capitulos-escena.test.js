@@ -3,8 +3,20 @@ import assert from 'node:assert/strict';
 import { escenaCapitulos } from '../www/js/escenas/capitulos.js';
 import { CAPITULOS } from '../www/js/datos/capitulos.js';
 import { crearEstadoPuntero } from '../www/js/entrada/coordenadas.js';
+import { crearProgreso } from '../www/js/sistemas/progreso.js';
+import { crearGuardado } from '../www/js/sistemas/guardado.js';
 
-function preparar() {
+// Almacén en memoria con la misma interfaz que localStorage.
+function guardadoFalso(datos = {}) {
+  const mapa = new Map(Object.entries(datos).map(([k, v]) => ['astro.' + k, String(v)]));
+  return crearGuardado({
+    getItem: (k) => (mapa.has(k) ? mapa.get(k) : null),
+    setItem: (k, v) => mapa.set(k, String(v)),
+    removeItem: (k) => mapa.delete(k),
+  });
+}
+
+function preparar(datos = {}) {
   const destinos = [];
   const sonidos = [];
   const puntero = crearEstadoPuntero();
@@ -14,6 +26,7 @@ function preparar() {
     irA: (nombre, params) => destinos.push(params ? [nombre, params] : [nombre]),
     fantasma: { update() {}, draw() {} },
     capitulos: CAPITULOS,
+    progreso: crearProgreso(guardadoFalso(datos)),
     sonar: (nombre) => sonidos.push(nombre),
   });
   escena.entrar();
@@ -49,8 +62,8 @@ test('los botones no se salen de la pantalla ni se superponen', () => {
   }
 });
 
-test('tocar un capítulo lo empieza', () => {
-  const { destinos, tocar } = preparar();
+test('tocar un capítulo desbloqueado lo empieza', () => {
+  const { destinos, tocar } = preparar({ capituloMax: 3 });
   tocar('3  NEBULOSA CARMESÍ');
   assert.deepEqual(destinos, [['historia', { capitulo: 3 }]]);
 });
@@ -70,4 +83,48 @@ test('el toque que trajo a la pantalla no elige un capítulo', () => {
   escena.entrar();
   escena.update(0.01);
   assert.deepEqual(destinos, []);
+});
+
+const bloqueados = (escena) => escena.botones().filter((b) => b.capitulo).map((b) => b.bloqueado);
+
+test('sin haber jugado, solo el capítulo 1 está desbloqueado', () => {
+  const { escena } = preparar();
+  assert.deepEqual(bloqueados(escena), [false, true, true, true, true]);
+});
+
+test('con progreso guardado se desbloquean hasta el capítulo máximo', () => {
+  const { escena } = preparar({ capituloMax: 4 });
+  assert.deepEqual(bloqueados(escena), [false, false, false, false, true]);
+});
+
+test('tocar un capítulo bloqueado no lo abre y avisa', () => {
+  const { escena, destinos, tocar } = preparar();
+  tocar('2  CINTURÓN DE ASTEROIDES');
+  assert.deepEqual(destinos, []);
+  assert.equal(escena.aviso.texto, 'COMPLETA EL CAPÍTULO ANTERIOR');
+  for (let i = 0; i < 200; i++) escena.update(0.01);
+  assert.equal(escena.aviso, null);
+});
+
+test('cada capítulo desbloqueado muestra su mejor puntaje', () => {
+  const { escena } = preparar({ capituloMax: 2, mejorCap1: 4200 });
+  const [uno, dos] = escena.botones();
+  assert.deepEqual([uno.mejor, dos.mejor], [4200, 0]);
+});
+
+test('el selector se entera del progreso nuevo al volver a entrar', () => {
+  const guardado = guardadoFalso();
+  const progreso = crearProgreso(guardado);
+  const escena = escenaCapitulos({
+    estrellas: { update() {}, draw() {} },
+    puntero: crearEstadoPuntero(),
+    irA: () => {},
+    fantasma: { update() {}, draw() {} },
+    capitulos: CAPITULOS,
+    progreso,
+  });
+  escena.entrar();
+  progreso.completar(1, 100);
+  escena.entrar();
+  assert.deepEqual(bloqueados(escena), [false, false, true, true, true]);
 });

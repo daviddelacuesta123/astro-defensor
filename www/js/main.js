@@ -64,7 +64,9 @@ const historia = escenaJuego({
 escenas.registrar('historia', historia);
 // Escenas con partida: en pausa, la música calla.
 const partidas = { juego, historia };
-escenas.registrar('capitulos', escenaCapitulos({ estrellas, puntero, irA, fantasma, capitulos: CAPITULOS, sonar }));
+escenas.registrar('capitulos', escenaCapitulos({
+  estrellas, puntero, irA, fantasma, capitulos: CAPITULOS, progreso, sonar,
+}));
 escenas.registrar('configuracion', escenaConfiguracion({
   estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar, sonar,
 }));
