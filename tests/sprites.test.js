@@ -32,3 +32,12 @@ test('cada tipo de enemigo tiene sprite del mismo tamaño que su caja', async ()
     assert.equal(s.filas.length * s.escala, def.alto, `alto de ${tipo}`);
   }
 });
+
+test('hay un retrato de 16×16 para cada personaje que habla', () => {
+  for (const quien of ['nova', 'iriarte', 'reina']) {
+    const r = sprites.RETRATOS?.[quien];
+    assert.ok(r, `falta el retrato de ${quien}`);
+    assert.equal(r.filas.length, 16, quien);
+    assert.equal(r.filas[0].length, 16, quien);
+  }
+});
