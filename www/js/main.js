@@ -1,5 +1,6 @@
 import { view } from './config.js';
 import { canvas, ctx, resize, beginFrame } from './render.js';
+import { cabenPaneles } from './marco.js';
 import { clampDt } from './util.js';
 import { crearGestorEscenas } from './escenas/gestor.js';
 import { escenaCarga } from './escenas/carga.js';
@@ -22,12 +23,22 @@ import { crearAudio } from './sistemas/audio.js';
 import { crearEstrellas } from './fondo/estrellas.js';
 import { crearEstadoPuntero } from './entrada/coordenadas.js';
 import { conectarPuntero } from './entrada/puntero.js';
+import { crearTeclado } from './entrada/teclado.js';
 
-window.addEventListener('resize', resize);
-resize();
+// En el PC el juego va en una columna centrada; los paneles laterales ocupan los costados si caben.
+function ajustarPantalla() {
+  const marco = resize();
+  document.body.classList.toggle('escritorio', marco.escritorio);
+  document.body.classList.toggle('con-paneles', cabenPaneles(marco));
+  document.body.style.setProperty('--lado', `${marco.x}px`);
+}
+window.addEventListener('resize', ajustarPantalla);
+ajustarPantalla();
 
 const puntero = crearEstadoPuntero();
 conectarPuntero(canvas, puntero);
+// En el PC: flechas o WASD mueven la nave; Esc o P pausan (los eventos se conectan más abajo).
+const teclado = crearTeclado();
 
 const guardado = crearGuardado(obtenerAlmacen());
 const configuracion = crearConfiguracion(guardado);
@@ -57,12 +68,12 @@ const fantasma = crearFantasma({ oleadas: OLEADAS_PRUEBA });
 escenas.registrar('carga', escenaCarga({ estrellas, puntero, irA, fantasma }));
 escenas.registrar('menu', escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar }));
 const juego = escenaJuego({
-  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, oleadas: (n) => generarOleada(n),
+  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, teclado, oleadas: (n) => generarOleada(n),
 });
 escenas.registrar('juego', juego);
 // El Modo Historia es la misma escena de juego, con los capítulos en lugar de oleadas infinitas.
 const historia = escenaJuego({
-  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS, progreso, conDialogos: true,
+  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, teclado, capitulos: CAPITULOS, progreso, conDialogos: true,
 });
 escenas.registrar('historia', historia);
 // Escenas con partida: en pausa, la música calla.
@@ -80,9 +91,21 @@ irA('carga');
 
 // Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa y el audio calla.
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) escenas.enviar('pausar');
+  if (document.hidden) {
+    escenas.enviar('pausar');
+    teclado.soltarTodo();
+  }
   audio.segundoPlano(document.hidden);
 });
+
+window.addEventListener('keydown', (e) => {
+  // Las flechas harían scroll en la página.
+  if (teclado.presionar(e.code)) e.preventDefault();
+  if ((e.code === 'Escape' || e.code === 'KeyP') && !e.repeat) escenas.enviar('alternarPausa');
+});
+window.addEventListener('keyup', (e) => teclado.soltar(e.code));
+// Si la ventana pierde el foco no llega el keyup: sin esto la nave seguiría moviéndose sola.
+window.addEventListener('blur', () => teclado.soltarTodo());
 
 let last = performance.now();
 function loop(now) {

@@ -1,9 +1,10 @@
 import { view } from '../config.js';
-import { aLogicas } from './coordenadas.js';
+import { aLogicasEnRect } from './coordenadas.js';
 
 // Conecta los eventos táctiles/mouse del canvas al estado del puntero.
 export function conectarPuntero(canvas, estado) {
-  const logicas = (e) => aLogicas(e.clientX, e.clientY, window.innerWidth, window.innerHeight, view.H);
+  // En el PC el canvas no empieza en (0, 0): se mide su rectángulo en cada evento.
+  const logicas = (e) => aLogicasEnRect(e.clientX, e.clientY, canvas.getBoundingClientRect(), view.H);
 
   canvas.addEventListener('pointerdown', (e) => {
     const p = logicas(e);

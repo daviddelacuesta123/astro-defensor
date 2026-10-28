@@ -25,7 +25,7 @@ const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
 // el diálogo vuelve con entrar({ reanudar: true }). Todo lo demás es opcional.
 export function escenaJuego({
   estrellas, puntero, irA, guardado, oleadas, capitulos, progreso, conDialogos = false,
-  configuracion, vibrar, sonar = () => {},
+  configuracion, vibrar, sonar = () => {}, teclado = null,
 }) {
   return {
     partida: null,
@@ -91,6 +91,12 @@ export function escenaJuego({
       if (this.estado === 'jugando') this.estado = 'pausa';
     },
 
+    // Esc o P en el teclado: pausa o reanuda (solo durante la partida, no en las pantallas finales).
+    alternarPausa() {
+      if (this.estado === 'pausa') this.estado = 'jugando';
+      else if (this.partida.estado === 'jugando') this.pausar();
+    },
+
     update(dt) {
       const botones = this.botones();
       for (const { x, y } of puntero.tomarToques()) {
@@ -106,7 +112,8 @@ export function escenaJuego({
       if (this.estado === 'pausa') return;
       estrellas.update(dt, view.H);
       const oleadaAntes = this.partida.oleada;
-      this.partida.update(dt, puntero);
+      // En el PC, las flechas o WASD mueven la nave como si fueran un dedo.
+      this.partida.update(dt, teclado?.dedoVirtual(this.partida.jugador) ?? puntero);
 
       // El director cambia de oleada al vaciarse la pantalla: se anuncia durante la pausa entre oleadas.
       if (this.partida.oleada !== oleadaAntes) {

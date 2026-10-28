@@ -47,3 +47,11 @@ test('tomarToques devuelve los toques nuevos y los vacía', () => {
   assert.deepEqual(p.tomarToques(), [{ x: 10, y: 20 }, { x: 30, y: 40 }]);
   assert.deepEqual(p.tomarToques(), []);
 });
+
+test('aLogicasEnRect descuenta el desplazamiento del canvas centrado', async () => {
+  const { aLogicasEnRect } = await import('../www/js/entrada/coordenadas.js');
+  const rect = { left: 491, top: 0, width: 384, height: 768 };
+  const centro = aLogicasEnRect(491 + 192, 384, rect, 720);
+  assert.ok(Math.abs(centro.x - 180) < 1e-9 && Math.abs(centro.y - 360) < 1e-9);
+  assert.deepEqual(aLogicasEnRect(491, 0, rect, 720), { x: 0, y: 0 });
+});

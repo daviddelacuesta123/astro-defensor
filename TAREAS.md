@@ -113,10 +113,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 11 | `dialogos` | #13 | Diálogos con retrato antes y después de cada capítulo, texto letra por letra, SALTAR |
 | 12 | `jefes` | #14 | Un jefe por capítulo con alerta, barra de vida y fases; la Reina tiene 3 fases |
 | — | `easter-eggs` | #15 | Extra: 7 toques al logo del menú alternan la nave dorada; mantener 3 s "v1.0 · UPB" abre créditos ocultos |
+| — | `vista-escritorio` | #16 | Extra: en el PC, columna centrada con paneles laterales; teclado (flechas/WASD, Esc/P) |
 
 **Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Con `conDialogos` (así está en `main.js`), el selector y SIGUIENTE pasan antes por `irA('dialogo', { capitulo, momento: 'antes' })`, y al completar se va a `momento: 'despues'`, que vuelve con `entrar({ reanudar: true })` a la pantalla final. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
 
 **Easter eggs (no los anuncies en la interfaz):** en el menú, tocar el logo 7 veces seguidas (menos de 1 s entre toques) desbloquea y luego alterna la nave dorada (`naveSecreta` y `naveDorada` en `guardado`); mantener presionado "v1.0 · UPB" 3 s abre la escena `creditos`. La lógica de los gestos está en `sistemas/secretos.js` y el texto de los créditos en `datos/creditos.js`.
+
+**Vista de escritorio:** `marco.js` decide si el juego ocupa toda la ventana (celular) o va en una columna centrada (PC); `render.js` posiciona el canvas y `entrada/puntero.js` convierte coordenadas con `getBoundingClientRect()`, así que nunca uses `window.innerWidth` para calcular posiciones dentro del juego. El teclado (`entrada/teclado.js`) produce un "dedo virtual" que `escenas/juego.js` usa en lugar del puntero; Esc/P llaman a `alternarPausa()`. Los paneles laterales son HTML/CSS en `index.html` y solo aparecen con la clase `con-paneles`.
 
 ## 6. Features pendientes, en orden
 
