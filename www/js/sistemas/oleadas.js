@@ -32,8 +32,8 @@ export function crearDirector(oleadas, { pausa = 2 } = {}) {
 
       const escala = ACELERACION_CICLO ** this.ciclo;
       while (siguiente < actual.length && actual[siguiente].t * escala <= tiempo) {
-        const { tipo, x } = actual[siguiente];
-        flota.agregar(crearEnemigo(tipo, x, -20));
+        const { tipo, x, vel = 1 } = actual[siguiente];
+        flota.agregar(crearEnemigo(tipo, x, -20, { velocidad: vel }));
         siguiente++;
       }
 

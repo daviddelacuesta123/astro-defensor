@@ -67,3 +67,9 @@ test('las oleadas avanzadas llegan más seguidas', () => {
   };
   assert.ok(duracion(40) < duracion(12), 'más enemigos por segundo en la oleada 40');
 });
+
+test('los enemigos aceleran un 4 % por oleada, hasta 1.6 veces', () => {
+  assert.ok(generarOleada(0, rngConSemilla()).every((a) => a.vel === 1));
+  assert.ok(generarOleada(10, rngConSemilla()).every((a) => Math.abs(a.vel - 1.4) < 1e-9));
+  assert.ok(generarOleada(60, rngConSemilla()).every((a) => a.vel === 1.6));
+});

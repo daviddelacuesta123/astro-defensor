@@ -6,6 +6,9 @@ const MAX_ENEMIGOS = 30;
 const MAX_TIRADORES = 4;
 const SEPARACION_MIN = 0.6;
 const INTERVALO_LINEA = 0.45;
+// Los enemigos van un 4 % más rápido en cada oleada, hasta 1.6 veces su velocidad.
+const ACELERACION_OLEADA = 0.04;
+const VEL_MAX = 1.6;
 
 const enRango = (rng, min, max) => min + rng() * (max - min);
 
@@ -58,5 +61,6 @@ export function generarOleada(n, rng = Math.random) {
       t += separacion;
     }
   }
-  return apariciones.sort((a, b) => a.t - b.t);
+  const vel = Math.min(VEL_MAX, 1 + ACELERACION_OLEADA * n);
+  return apariciones.map((a) => ({ ...a, vel })).sort((a, b) => a.t - b.t);
 }

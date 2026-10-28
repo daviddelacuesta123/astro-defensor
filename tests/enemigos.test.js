@@ -65,3 +65,11 @@ test('el tirador se retira hacia abajo tras 6 s en su puesto', () => {
   simular(e, 1);
   assert.ok(e.y > 120 + 30, `debería estar bajando: ${e.y}`);
 });
+
+test('un enemigo con velocidad 1.5 se mueve 1.5 veces más rápido', () => {
+  const normal = crearEnemigo('explorador', 100, 0);
+  const rapido = crearEnemigo('explorador', 100, 0, { velocidad: 1.5 });
+  normal.update(0.5, entorno());
+  rapido.update(0.5, entorno());
+  assert.ok(Math.abs(rapido.y - normal.y * 1.5) < 1e-9);
+});
