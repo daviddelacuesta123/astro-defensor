@@ -18,9 +18,11 @@ const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
 // Sin `capitulos` es el Modo Libre: oleadas sin fin hasta perder; guarda el récord.
 // Con `capitulos` es el Modo Historia: entrar({ capitulo }) juega ese capítulo hasta vaciar
 // su última oleada, sin récord; al completarlo avisa a `progreso` (desbloqueo y mejor puntaje).
-// `configuracion`, `vibrar`, `sonar` y `progreso` son opcionales.
+// Con `conDialogos`, completar pasa por el diálogo de después y SIGUIENTE por el de antes;
+// el diálogo vuelve con entrar({ reanudar: true }). Todo lo demás es opcional.
 export function escenaJuego({
-  estrellas, puntero, irA, guardado, oleadas, capitulos, progreso, configuracion, vibrar, sonar = () => {},
+  estrellas, puntero, irA, guardado, oleadas, capitulos, progreso, conDialogos = false,
+  configuracion, vibrar, sonar = () => {},
 }) {
   return {
     partida: null,
@@ -48,7 +50,12 @@ export function escenaJuego({
     },
 
     // Reiniciar y reintentar vuelven a entrar sin parámetros: se repite el mismo capítulo.
-    entrar({ capitulo } = {}) {
+    entrar({ capitulo, reanudar } = {}) {
+      // De vuelta del diálogo de después: la pantalla final sigue tal cual.
+      if (reanudar) {
+        puntero.tomarToques();
+        return;
+      }
       if (capitulos) this.capitulo = capitulos[(capitulo ?? this.capitulo.numero) - 1];
       // La sensibilidad se lee en cada partida nueva: así toma los cambios de la configuración.
       const sensibilidad = configuracion?.valores.sensibilidad ?? 1;
@@ -103,6 +110,12 @@ export function escenaJuego({
       else if (this.partida.estado === 'completada') this.completar();
     },
 
+    siguiente() {
+      const capitulo = this.capitulo.numero + 1;
+      if (conDialogos) irA('dialogo', { capitulo, momento: 'antes' });
+      else this.entrar({ capitulo });
+    },
+
     terminar() {
       this.estado = 'fin';
       this.avisoOleada = null;
@@ -122,13 +135,14 @@ export function escenaJuego({
       // El arpegio del power-up sirve de fanfarria.
       sonar('powerup');
       puntero.tomarToques();
+      if (conDialogos) irA('dialogo', { capitulo: this.capitulo.numero, momento: 'despues' });
     },
 
     accion(texto) {
       if (texto === 'PAUSA') this.estado = 'pausa';
       else if (texto === 'CONTINUAR') this.estado = 'jugando';
       else if (texto === 'REINICIAR' || texto === 'REINTENTAR') this.entrar();
-      else if (texto === 'SIGUIENTE') this.entrar({ capitulo: this.capitulo.numero + 1 });
+      else if (texto === 'SIGUIENTE') this.siguiente();
       else if (texto === 'SALIR AL MENÚ' || texto === 'MENÚ') irA('menu');
     },
 

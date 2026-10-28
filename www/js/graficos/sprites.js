@@ -121,6 +121,81 @@ export const SPRITES_ENEMIGO = {
   asteroideGrande: ASTEROIDE_GRANDE,
 };
 
+// Retratos de los diálogos (16×16). Nova con su casco cian, Iriarte con gorra y uniforme,
+// y la Reina del Enjambre con la corona y los colores Vex.
+const PIEL = '#e8b48c';
+
+export const RETRATO_NOVA = {
+  escala: 3,
+  paleta: { A: COLORS.accent, W: COLORS.text, K: '#0c1630', S: PIEL, R: '#b0505e', B: '#1d3a7a' },
+  filas: [
+    '.....AAAAAA.....',
+    '...AAAAAAAAAA...',
+    '..AAAWAAAAAAAA..',
+    '.AAAWAAAAAAAAAA.',
+    '.AAKKKKKKKKKKAA.',
+    '.AKKWWKKKKKKKKA.',
+    '.AKKWKKKKKKKKKA.',
+    '.AKKKKKKKKKKKKA.',
+    '.AAKSSSSSSSSKAA.',
+    '..AASSSSSSSSAA..',
+    '..AASSSRRSSSAA..',
+    '...AASSSSSSAA...',
+    '....BBBBBBBB....',
+    '..BBBBAAAABBBB..',
+    '.BBBBBBAABBBBBB.',
+    'BBBBBBBBBBBBBBBB',
+  ],
+};
+
+export const RETRATO_IRIARTE = {
+  escala: 3,
+  paleta: { G: '#2f5a44', Y: COLORS.warn, D: '#14141c', H: '#b8bcc8', S: PIEL, K: '#20202a', R: '#a04a52', W: COLORS.text },
+  filas: [
+    '................',
+    '....GGGGGGGG....',
+    '...GGGGYYGGGG...',
+    '..GGGGGGGGGGGG..',
+    '..DDDDDDDDDDDD..',
+    '...HSSSSSSSSH...',
+    '...HSKSSSSKSH...',
+    '...SSSSSSSSSS...',
+    '...SSSSSSSSSS...',
+    '....SSSRRSSS....',
+    '.....SSSSSS.....',
+    '......SSSS......',
+    '...GGGGWWGGGG...',
+    '..GGYGGWWGGYGG..',
+    '.GGGGGGWWGGGGGG.',
+    'GGGGGGGGGGGGGGGG',
+  ],
+};
+
+export const RETRATO_REINA = {
+  escala: 3,
+  paleta: { R: COLORS.danger, Y: COLORS.warn, K: '#3a0a14' },
+  filas: [
+    '.Y....Y..Y....Y.',
+    '.YY..YY..YY..YY.',
+    '.YYYYYYYYYYYYYY.',
+    '..RRRRRRRRRRRR..',
+    '.RRRRRRRRRRRRRR.',
+    'RRKKRRRRRRRRKKRR',
+    'RRKYYRRRRRRYYKRR',
+    'RRRKKRRRRRRKKRRR',
+    '.RRRRRRRRRRRRRR.',
+    '.RRRRKKKKKKRRRR.',
+    '..RRKYKYKYKKRR..',
+    '..RRRKKKKKKRRR..',
+    '...RRRRRRRRRR...',
+    '.R..RRRRRRRR..R.',
+    'RR...RRRRRR...RR',
+    'R.....RRRR.....R',
+  ],
+};
+
+export const RETRATOS = { nova: RETRATO_NOVA, iriarte: RETRATO_IRIARTE, reina: RETRATO_REINA };
+
 // Dibuja el sprite centrado en (x, y). Con `colorUnico` pinta todo de ese color (destello al recibir daño).
 export function dibujarSprite(ctx, sprite, x, y, colorUnico) {
   const { filas, paleta, escala } = sprite;

@@ -145,16 +145,22 @@ test('la partida del juego suena', () => {
 // Modo Historia: la misma escena con la opción `capitulos`.
 const { CAPITULOS } = await import('../www/js/datos/capitulos.js');
 
-function prepararHistoria(capitulo, guardado = guardadoFalso(), progreso = undefined) {
+function prepararHistoria(capitulo, guardado = guardadoFalso(), progreso = undefined, extra = {}) {
   const destinos = [];
+  // Cada llamada a irA con sus parámetros.
+  const viajes = [];
   const puntero = crearEstadoPuntero();
   const escena = escenaJuego({
     estrellas: { update() {}, draw() {} },
     puntero,
-    irA: (nombre) => destinos.push(nombre),
+    irA: (nombre, params) => {
+      destinos.push(nombre);
+      viajes.push([nombre, params]);
+    },
     guardado,
     capitulos: CAPITULOS,
     progreso,
+    ...extra,
   });
   escena.entrar({ capitulo });
   const textos = () => escena.botones().map((b) => b.texto);
@@ -169,7 +175,7 @@ function prepararHistoria(capitulo, guardado = guardadoFalso(), progreso = undef
     escena.partida.estado = 'completada';
     escena.update(0.01);
   };
-  return { escena, destinos, textos, tocarBoton, completar };
+  return { escena, destinos, viajes, textos, tocarBoton, completar };
 }
 
 test('historia: entra al capítulo pedido y anuncia su título', () => {
@@ -281,4 +287,45 @@ test('historia: entrar a un capítulo nuevo borra el resultado del anterior', ()
   completar();
   tocarBoton('SIGUIENTE');
   assert.equal(escena.resultado, null);
+});
+
+test('historia con diálogos: al completar va al diálogo de después, con el progreso ya guardado', () => {
+  const guardado = guardadoFalso();
+  const progreso = crearProgreso(guardado);
+  const { escena, viajes, completar } = prepararHistoria(2, guardado, progreso, { conDialogos: true });
+  completar();
+  assert.deepEqual(viajes, [['dialogo', { capitulo: 2, momento: 'despues' }]]);
+  assert.equal(progreso.desbloqueado(3), true);
+  assert.equal(escena.estado, 'completado');
+});
+
+test('historia con diálogos: volver del diálogo no reinicia ni cuenta otra vez', () => {
+  const guardado = guardadoFalso();
+  const { escena, textos, completar } = prepararHistoria(2, guardado, crearProgreso(guardado), { conDialogos: true });
+  escena.partida.puntos = 700;
+  completar();
+  const partida = escena.partida;
+  const resultado = escena.resultado;
+  escena.entrar({ reanudar: true });
+  assert.equal(escena.partida, partida);
+  assert.equal(escena.resultado, resultado);
+  assert.equal(escena.estado, 'completado');
+  assert.deepEqual(textos(), ['SIGUIENTE', 'MENÚ']);
+});
+
+test('historia con diálogos: SIGUIENTE pasa por el diálogo de antes del próximo capítulo', () => {
+  const { escena, viajes, tocarBoton, completar } = prepararHistoria(2, guardadoFalso(), undefined, { conDialogos: true });
+  completar();
+  escena.entrar({ reanudar: true });
+  tocarBoton('SIGUIENTE');
+  assert.deepEqual(viajes.at(-1), ['dialogo', { capitulo: 3, momento: 'antes' }]);
+});
+
+test('historia con diálogos: REINTENTAR repite el capítulo sin diálogo', () => {
+  const { escena, viajes, tocarBoton } = prepararHistoria(4, guardadoFalso(), undefined, { conDialogos: true });
+  escena.partida.estado = 'terminada';
+  escena.update(0.01);
+  tocarBoton('REINTENTAR');
+  assert.deepEqual(viajes, []);
+  assert.deepEqual([escena.estado, escena.capitulo.numero], ['jugando', 4]);
 });

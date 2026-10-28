@@ -7,6 +7,8 @@ import { escenaMenu } from './escenas/menu.js';
 import { escenaJuego } from './escenas/juego.js';
 import { escenaConfiguracion } from './escenas/configuracion.js';
 import { escenaCapitulos } from './escenas/capitulos.js';
+import { escenaDialogo } from './escenas/dialogo.js';
+import { DIALOGOS } from './datos/dialogos.js';
 import { CAPITULOS } from './datos/capitulos.js';
 import { crearFantasma } from './sistemas/fantasma.js';
 import { OLEADAS_PRUEBA } from './datos/oleadas.js';
@@ -42,7 +44,7 @@ canvas.addEventListener('pointerdown', () => audio.activar());
 
 // Tema musical de cada pantalla; el mismo tema sigue sin cortarse al cambiar entre ellas.
 const TEMA_ESCENA = {
-  carga: 'menu', menu: 'menu', configuracion: 'menu', capitulos: 'menu', juego: 'juego', historia: 'juego',
+  carga: 'menu', menu: 'menu', configuracion: 'menu', capitulos: 'menu', dialogo: 'menu', juego: 'juego', historia: 'juego',
 };
 const estrellas = crearEstrellas({ alto: view.H });
 const escenas = crearGestorEscenas();
@@ -59,14 +61,15 @@ const juego = escenaJuego({
 escenas.registrar('juego', juego);
 // El Modo Historia es la misma escena de juego, con los capítulos en lugar de oleadas infinitas.
 const historia = escenaJuego({
-  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS, progreso,
+  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS, progreso, conDialogos: true,
 });
 escenas.registrar('historia', historia);
 // Escenas con partida: en pausa, la música calla.
 const partidas = { juego, historia };
 escenas.registrar('capitulos', escenaCapitulos({
-  estrellas, puntero, irA, fantasma, capitulos: CAPITULOS, progreso, sonar,
+  estrellas, puntero, irA, fantasma, capitulos: CAPITULOS, progreso, conDialogos: true, sonar,
 }));
+escenas.registrar('dialogo', escenaDialogo({ estrellas, puntero, irA, dialogos: DIALOGOS, capitulos: CAPITULOS, sonar }));
 escenas.registrar('configuracion', escenaConfiguracion({
   estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar, sonar,
 }));
