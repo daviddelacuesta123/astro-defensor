@@ -55,3 +55,8 @@ test('cada jefe tiene un sprite por fase, del mismo tamaño que su caja', async 
     }
   }
 });
+
+test('la nave dorada tiene la misma figura que la AD-7, con otros colores', () => {
+  assert.deepEqual(sprites.NAVE_DORADA.filas, sprites.NAVE_AD7.filas);
+  assert.notDeepEqual(sprites.NAVE_DORADA.paleta, sprites.NAVE_AD7.paleta);
+});
