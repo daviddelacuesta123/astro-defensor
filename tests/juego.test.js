@@ -367,3 +367,33 @@ test('con la nave dorada activada, la partida la usa', async () => {
   assert.equal(preparar(guardadoFalso({ naveDorada: 0 })).escena.partida.sprite, NAVE_AD7);
   assert.equal(preparar().escena.partida.sprite, NAVE_AD7);
 });
+
+test('con el teclado, la flecha izquierda mueve la nave a la izquierda', async () => {
+  const { crearTeclado } = await import('../www/js/entrada/teclado.js');
+  const teclado = crearTeclado();
+  const { escena } = preparar(guardadoFalso(), { teclado });
+  const xInicial = escena.partida.jugador.x;
+  teclado.presionar('ArrowLeft');
+  for (let i = 0; i < 30; i++) escena.update(0.01);
+  assert.ok(escena.partida.jugador.x < xInicial - 20, `x: ${escena.partida.jugador.x}`);
+  teclado.soltarTodo();
+  const xQuieta = escena.partida.jugador.x;
+  for (let i = 0; i < 30; i++) escena.update(0.01);
+  assert.equal(escena.partida.jugador.x, xQuieta, 'sin teclas ni dedo, la nave se queda quieta');
+});
+
+test('alternarPausa pausa y reanuda la partida', () => {
+  const { escena } = preparar();
+  escena.alternarPausa();
+  assert.equal(escena.estado, 'pausa');
+  escena.alternarPausa();
+  assert.equal(escena.estado, 'jugando');
+});
+
+test('alternarPausa no hace nada en el fin de partida', () => {
+  const { escena } = preparar();
+  escena.partida.estado = 'terminada';
+  escena.update(0.01);
+  escena.alternarPausa();
+  assert.equal(escena.estado, 'fin');
+});
