@@ -9,12 +9,14 @@ function almacenFalso() {
     datos,
     getItem: (k) => (datos.has(k) ? datos.get(k) : null),
     setItem: (k, v) => datos.set(k, String(v)),
+    removeItem: (k) => datos.delete(k),
   };
 }
 
 const almacenRoto = {
   getItem() { throw new Error('bloqueado'); },
   setItem() { throw new Error('bloqueado'); },
+  removeItem() { throw new Error('bloqueado'); },
 };
 
 test('lee lo que escribió, con prefijo astro.', () => {
@@ -52,4 +54,18 @@ test('sin almacén disponible tampoco falla', () => {
   const g = crearGuardado(undefined);
   assert.doesNotThrow(() => g.escribir('x', 1));
   assert.equal(g.leerNumero('x', 3), 3);
+});
+
+test('borrar quita la clave y se vuelve a leer el defecto', () => {
+  const almacen = almacenFalso();
+  const g = crearGuardado(almacen);
+  g.escribir('recordLibre', 900);
+  g.borrar('recordLibre');
+  assert.equal(almacen.datos.has('astro.recordLibre'), false);
+  assert.equal(g.leerNumero('recordLibre', 5), 5);
+});
+
+test('borrar no falla si el almacén falla o no existe', () => {
+  assert.doesNotThrow(() => crearGuardado(almacenRoto).borrar('x'));
+  assert.doesNotThrow(() => crearGuardado(undefined).borrar('x'));
 });

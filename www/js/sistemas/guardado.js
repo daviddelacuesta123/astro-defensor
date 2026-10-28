@@ -31,5 +31,13 @@ export function crearGuardado(almacen) {
         // Sin espacio o bloqueado: no hay nada más que hacer.
       }
     },
+
+    borrar(clave) {
+      try {
+        almacen?.removeItem(PREFIJO + clave);
+      } catch {
+        // Bloqueado: el valor se queda, pero el juego sigue.
+      }
+    },
   };
 }
