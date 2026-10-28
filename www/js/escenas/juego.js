@@ -11,7 +11,9 @@ import { NAVE_AD7, dibujarSprite } from '../graficos/sprites.js';
 import { crearBoton, dibujarBoton, dibujarVelo } from '../graficos/ui.js';
 import { dibujarHUD } from '../graficos/hud.js';
 
-const COLOR_EXPLOSION = { explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
+// Segundos entre la explosión de la nave y la pantalla de fin de partida.
+const ESPERA_FIN = 1.5;
+const COLOR_EXPLOSION ={ explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
 
 // Llama del propulsor: dos chorros bajo los motores que parpadean.
 function dibujarLlama(ctx, x, y) {
@@ -46,8 +48,9 @@ export function escenaJuego({ estrellas, puntero }) {
   let puntos;
   let destello;
   let t;
-  // 'jugando' | 'pausa'
+  // 'jugando' | 'pausa' | 'muriendo' (explosión de la nave) | 'fin'
   let estado;
+  let finEn;
   const disparar = (x, y, vx) => balas.disparar(x, y, undefined, vx);
   const botonPausa = crearBoton({ texto: '', x: W - 24, y: 24, ancho: 32, alto: 32 });
   // Se calculan al usarlos porque dependen del alto de la pantalla.
@@ -55,6 +58,7 @@ export function escenaJuego({ estrellas, puntero }) {
     crearBoton({ texto: 'CONTINUAR', x: W / 2, y: view.H * 0.48, ancho: 190, alto: 44 }),
     crearBoton({ texto: 'REINICIAR', x: W / 2, y: view.H * 0.48 + 60, ancho: 190, alto: 44 }),
   ];
+  const botonReintentar = () => crearBoton({ texto: 'REINTENTAR', x: W / 2, y: view.H * 0.55, ancho: 190, alto: 44 });
 
   function destruir(enemigo) {
     puntos += enemigo.puntos;
@@ -104,7 +108,11 @@ export function escenaJuego({ estrellas, puntero }) {
         }
         return;
       }
-      if (toques.some(({ x, y }) => botonPausa.contiene(x, y))) {
+      if (estado === 'fin' && toques.some(({ x, y }) => botonReintentar().contiene(x, y))) {
+        this.entrar();
+        return;
+      }
+      if (estado === 'jugando' && toques.some(({ x, y }) => botonPausa.contiene(x, y))) {
         estado = 'pausa';
         return;
       }
@@ -112,8 +120,11 @@ export function escenaJuego({ estrellas, puntero }) {
       t += dt;
       destello = Math.max(0, destello - dt);
       estrellas.update(dt, view.H);
-      jugador.update(dt, puntero, view.H, disparar);
-      director.update(dt, flota);
+      // Tras perder, el mundo sigue moviéndose de fondo pero sin nave ni enemigos nuevos.
+      if (estado === 'jugando') {
+        jugador.update(dt, puntero, view.H, disparar);
+        director.update(dt, flota);
+      }
       flota.update(dt, entorno, view.H);
       balas.update(dt, view.H);
       balasEnemigas.update(dt, view.H);
@@ -125,14 +136,28 @@ export function escenaJuego({ estrellas, puntero }) {
         powerups.soltar(muerto.x, muerto.y);
       }
 
-      if (golpearJugador(jugador, balasEnemigas, flota) && jugador.recibirGolpe()) {
-        explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 10);
-        // Sin HUD ni fin de partida todavía: al perder todas las vidas se reinicia.
-        if (jugador.vidas <= 0) this.entrar();
+      if (estado === 'jugando') {
+        if (golpearJugador(jugador, balasEnemigas, flota) && jugador.recibirGolpe()) {
+          explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 10);
+          if (jugador.vidas <= 0) {
+            estado = 'muriendo';
+            finEn = ESPERA_FIN;
+            explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 40);
+            explosiones.estallar(jugador.x, jugador.y, COLORS.warn, 20);
+          }
+        }
+        for (const tipo of powerups.recoger(jugador)) {
+          if (aplicarPowerup(jugador, tipo) === 'bomba') detonarBomba();
+        }
       }
 
-      for (const tipo of powerups.recoger(jugador)) {
-        if (aplicarPowerup(jugador, tipo) === 'bomba') detonarBomba();
+      if (estado === 'muriendo') {
+        finEn -= dt;
+        if (finEn <= 0) {
+          estado = 'fin';
+          // Descarta toques viejos: el botón solo responde a toques nuevos.
+          puntero.tomarToques();
+        }
       }
     },
 
@@ -144,13 +169,15 @@ export function escenaJuego({ estrellas, puntero }) {
       balasEnemigas.draw(ctx);
       explosiones.draw(ctx);
 
-      // Mientras es invulnerable, la nave parpadea.
-      const visible = jugador.invulnerable === 0 || Math.floor(t * 12) % 2 === 0;
-      if (visible) {
-        dibujarLlama(ctx, jugador.x, jugador.y + 16);
-        dibujarSprite(ctx, NAVE_AD7, jugador.x, jugador.y);
+      if (estado === 'jugando' || estado === 'pausa') {
+        // Mientras es invulnerable, la nave parpadea.
+        const visible = jugador.invulnerable === 0 || Math.floor(t * 12) % 2 === 0;
+        if (visible) {
+          dibujarLlama(ctx, jugador.x, jugador.y + 16);
+          dibujarSprite(ctx, NAVE_AD7, jugador.x, jugador.y);
+        }
+        if (jugador.escudo) dibujarEscudo(ctx, jugador.x, jugador.y, t);
       }
-      if (jugador.escudo) dibujarEscudo(ctx, jugador.x, jugador.y, t);
 
       if (destello > 0) {
         ctx.globalAlpha = destello / 0.3 * 0.6;
@@ -164,6 +191,14 @@ export function escenaJuego({ estrellas, puntero }) {
       if (estado === 'pausa') {
         dibujarVelo(ctx, W, view.H, 'PAUSA');
         for (const boton of botonesPausa()) dibujarBoton(ctx, boton);
+      }
+
+      if (estado === 'fin') {
+        dibujarVelo(ctx, W, view.H, 'FIN DE LA PARTIDA', COLORS.danger);
+        ctx.fillStyle = COLORS.text;
+        ctx.font = 'bold 18px monospace';
+        ctx.fillText(`PUNTAJE  ${puntos}`, W / 2, view.H * 0.42);
+        dibujarBoton(ctx, botonReintentar());
       }
     },
   };

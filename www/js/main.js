@@ -18,6 +18,11 @@ const escenas = crearGestorEscenas();
 escenas.registrar('juego', escenaJuego({ estrellas, puntero }));
 escenas.ir('juego');
 
+// Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) escenas.enviar('pausar');
+});
+
 let last = performance.now();
 function loop(now) {
   const dt = clampDt(now - last);
