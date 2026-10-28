@@ -45,14 +45,19 @@ test('MODO LIBRE lleva al juego', () => {
   assert.deepEqual(destinos, ['juego']);
 });
 
-test('MODO HISTORIA y CONFIGURACIÓN avisan que llegan pronto', () => {
+test('MODO HISTORIA avisa que llega pronto', () => {
   const { escena, destinos, tocarBoton } = preparar();
   escena.entrar();
   tocarBoton('MODO HISTORIA');
   assert.equal(escena.aviso.texto, 'PRÓXIMAMENTE');
-  tocarBoton('CONFIGURACIÓN');
-  assert.equal(escena.aviso.texto, 'PRÓXIMAMENTE');
   assert.deepEqual(destinos, []);
+});
+
+test('CONFIGURACIÓN lleva a la pantalla de ajustes', () => {
+  const { escena, destinos, tocarBoton } = preparar();
+  escena.entrar();
+  tocarBoton('CONFIGURACIÓN');
+  assert.deepEqual(destinos, ['configuracion']);
 });
 
 test('el aviso dura 1.5 s y cada toque lo reinicia', () => {

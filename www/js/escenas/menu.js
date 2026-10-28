@@ -8,7 +8,7 @@ const DURACION_AVISO = 1.5;
 const OPCIONES = [
   { texto: 'MODO HISTORIA', destino: null },
   { texto: 'MODO LIBRE', destino: 'juego' },
-  { texto: 'CONFIGURACIÓN', destino: null },
+  { texto: 'CONFIGURACIÓN', destino: 'configuracion' },
 ];
 
 // Menú principal sobre la partida fantasma.
