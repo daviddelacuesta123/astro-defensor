@@ -127,3 +127,14 @@ test('cada botón suena al tocarlo', () => {
   tocar('NO');
   assert.deepEqual(sonidos, ['boton', 'boton', 'boton']);
 });
+
+test('borrar progreso también bloquea de nuevo los capítulos y borra sus puntajes', () => {
+  const guardado = guardadoFalso({ recordLibre: 10, capituloMax: 4, mejorCap1: 3000, mejorCap5: 9000 });
+  const { tocar } = preparar(guardado);
+  tocar('BORRAR PROGRESO');
+  tocar('SÍ');
+  assert.equal(guardado.leerNumero('capituloMax', 1), 1);
+  assert.equal(guardado.leerNumero('mejorCap1'), 0);
+  assert.equal(guardado.leerNumero('mejorCap5'), 0);
+  assert.equal(guardado.leerNumero('recordLibre'), 0);
+});

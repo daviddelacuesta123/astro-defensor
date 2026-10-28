@@ -17,9 +17,10 @@ const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
 
 // Sin `capitulos` es el Modo Libre: oleadas sin fin hasta perder; guarda el récord.
 // Con `capitulos` es el Modo Historia: entrar({ capitulo }) juega ese capítulo hasta vaciar
-// su última oleada, sin récord. `configuracion`, `vibrar` y `sonar` son opcionales.
+// su última oleada, sin récord; al completarlo avisa a `progreso` (desbloqueo y mejor puntaje).
+// `configuracion`, `vibrar`, `sonar` y `progreso` son opcionales.
 export function escenaJuego({
-  estrellas, puntero, irA, guardado, oleadas, capitulos, configuracion, vibrar, sonar = () => {},
+  estrellas, puntero, irA, guardado, oleadas, capitulos, progreso, configuracion, vibrar, sonar = () => {},
 }) {
   return {
     partida: null,
@@ -29,6 +30,8 @@ export function escenaJuego({
     capitulo: null,
     record: 0,
     nuevoRecord: false,
+    // { nuevoMejor, desbloqueado } del último capítulo completado.
+    resultado: null,
     // { n (desde 1), restante } mientras se anuncia una oleada.
     avisoOleada: null,
 
@@ -60,6 +63,7 @@ export function escenaJuego({
       this.estado = 'jugando';
       this.record = this.capitulo ? 0 : guardado.leerNumero(CLAVE_RECORD);
       this.nuevoRecord = false;
+      this.resultado = null;
       this.avisoOleada = { n: 1, restante: this.capitulo ? DURACION_TITULO : DURACION_AVISO_OLEADA };
       puntero.tomarToques();
     },
@@ -114,6 +118,7 @@ export function escenaJuego({
     completar() {
       this.estado = 'completado';
       this.avisoOleada = null;
+      this.resultado = progreso?.completar(this.capitulo.numero, this.partida.puntos) ?? null;
       // El arpegio del power-up sirve de fanfarria.
       sonar('powerup');
       puntero.tomarToques();
@@ -195,6 +200,17 @@ export function escenaJuego({
       ctx.font = 'bold 14px monospace';
       const mensaje = this.haySiguiente() ? 'ZONA DESPEJADA' : 'LA SEÑAL VUELVE A LA TIERRA';
       ctx.fillText(mensaje, W / 2, view.H * 0.41 + 30);
+      if (!this.resultado) return;
+      const { nuevoMejor, desbloqueado } = this.resultado;
+      ctx.font = 'bold 13px monospace';
+      if (desbloqueado) {
+        ctx.fillStyle = COLORS.accent;
+        ctx.fillText(`CAPÍTULO ${desbloqueado} DESBLOQUEADO`, W / 2, view.H * 0.41 + 56);
+      }
+      if (nuevoMejor && Math.floor(performance.now() / 400) % 2 === 0) {
+        ctx.fillStyle = COLORS.pink;
+        ctx.fillText('¡NUEVO MEJOR PUNTAJE!', W / 2, view.H * 0.41 + 78);
+      }
     },
   };
 }

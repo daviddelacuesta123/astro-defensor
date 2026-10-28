@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 220, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 237, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -42,7 +42,8 @@ www/
                      capitulos.js (selector), configuracion.js
     sistemas/        partida.js, fantasma.js, piloto.js, oleadas.js (director), generador.js,
                      colisiones.js, guardado.js, configuracion.js, vibracion.js,
-                     sonido.js (notas, temas y efectos como datos), audio.js (Web Audio)
+                     sonido.js (notas, temas y efectos como datos), audio.js (Web Audio),
+                     progreso.js (capítulos desbloqueados y mejores puntajes)
     entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
     datos/           enemigos.js (tipos Vex y asteroides), oleadas.js (formaciones y OLEADAS_PRUEBA),
                      capitulos.js (los 5 capítulos)
@@ -66,7 +67,8 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | **Partida** (`sistemas/partida.js`) | Simular una partida completa | `crearPartida({ oleadas, repetir, camuflaje, sensibilidad, vibrar, sonar })` devuelve `{ jugador, flota, balasEnemigas, powerups, puntos, oleada, estado: 'jugando' \| 'muriendo' \| 'terminada' \| 'completada', update(dt, puntero), draw(ctx) }`. No dibuja estrellas ni HUD. `oleadas` puede ser una **lista** (se repite en ciclos, o con `repetir: false` termina en `'completada'`) o una **función** `(n) => oleada` (infinito). |
 | **Oleada** | Datos de enemigos | Arreglo de `{ t, tipo, x, vel? }` ordenado por `t` (segundos). Formaciones listas: `linea`, `fila`, `ve` en `datos/oleadas.js`. |
 | **Enemigos** (`datos/enemigos.js`) | Tipos Vex y obstáculos | `explorador`, `zigzag`, `tirador`, y los obstáculos `asteroide` y `asteroideGrande` (`obstaculo: true`, no se camuflan). Para agregar un tipo: datos aquí más un sprite en `graficos/sprites.js` (`SPRITES_ENEMIGO`). Hay una prueba que verifica que el tamaño del sprite coincide con `ancho`/`alto`. |
-| **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor), borrar(clave) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Claves en uso: `recordLibre`, `volMusica`, `volEfectos`, `vibracion`, `sensibilidad`. |
+| **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor), borrar(clave) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Claves en uso: `recordLibre`, `volMusica`, `volEfectos`, `vibracion`, `sensibilidad`, `capituloMax`, `mejorCap1` a `mejorCap5`. |
+| **Progreso** (`sistemas/progreso.js`) | Campaña guardada | `crearProgreso(guardado)` devuelve `{ capituloMax(), desbloqueado(n), mejor(n), completar(n, puntos) }`. Lee el guardado en cada consulta. `CLAVES_HISTORIA` son las claves que borra "Borrar progreso". |
 | **Configuración** (`sistemas/configuracion.js`) | Ajustes del jugador | `crearConfiguracion(guardado)` devuelve `{ valores, cambiar(clave, valor), subir(clave), bajar(clave) }`; acota y guarda al cambiar. En `main.js` hay una sola instancia, `configuracion`, y `vibrar(ms)` (`sistemas/vibracion.js`), que solo vibra si el ajuste está activo. |
 | **Audio** (`sistemas/audio.js`, `sistemas/sonido.js`) | Efectos y música | En `main.js`, `sonar(nombre)` toca un efecto de `EFECTOS` (`disparo`, `explosion`, `golpe`, `powerup`, `bomba`, `boton`) y `audio.musica(tema)` cambia el tema de `TEMAS`. El tema de cada pantalla está en `TEMA_ESCENA` (`main.js`). Para un sonido nuevo: agregar sus capas en `EFECTOS`; para un tema nuevo, sus voces en `TEMAS` (una nota por corchea, `-` = sostener o silencio). Las escenas y la partida reciben `sonar` como parámetro opcional. |
 | **Sprites** (`graficos/sprites.js`) | Pixel art | Arreglos de texto con una letra por color (`.` = transparente), `paleta` y `escala`. `dibujarSprite(ctx, sprite, x, y, colorUnico?)`. |
@@ -106,12 +108,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 8 | `configuracion` | #9 | Ajustes guardados (volúmenes, vibración, sensibilidad), borrar progreso con confirmación |
 | 9 | `audio` | #10 | Efectos y música chiptune con Web Audio, volúmenes de la configuración, pausa de la música |
 | 10 | `modo-historia` | #11 | Selector y 5 capítulos jugables; asteroides, nebulosa con visión reducida y camuflaje, oleadas densas |
+| 13 | `guardado-progreso` | #12 | Solo el capítulo 1 al empezar; completar desbloquea el siguiente; mejor puntaje por capítulo; candados en el selector. Se adelantó a la 11 y la 12. |
 
 **Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adelantó) → **11 → 12 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
@@ -131,7 +134,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 
 **Tareas:**
 1. `sistemas/configuracion.js` (puro): `crearConfiguracion(guardado)` con `valores` y `cambiar(clave, valor)`. Debe acotar los rangos y guardar al cambiar. Claves sugeridas: `volMusica`, `volEfectos`, `vibracion` (1/0), `sensibilidad`. Pruebas: valores por defecto, acotado (por ejemplo, 150 → 100), persiste y relee.
 2. `escenas/configuracion.js`: filas con `−` / `+` para los números y un interruptor para la vibración, dibujadas en el canvas; usa `botones()` como el resto. Pruebas con la misma técnica de `tests/menu.test.js`: tocar el botón por su texto.
-3. **Borrar progreso**: por ahora borra `recordLibre`. En la feature 13 se suma el progreso de capítulos (agregar las claves a `CLAVES_PROGRESO` en `escenas/configuracion.js`). Conviene agregar `guardado.borrar(clave)`, con su prueba.
+3. **Borrar progreso**: borra `recordLibre` y las claves de la campaña (`CLAVES_PROGRESO` en `escenas/configuracion.js`). Conviene agregar `guardado.borrar(clave)`, con su prueba.
 4. **Conectar la sensibilidad:** `jugador.update(dt, puntero, alto, disparar, sensibilidad)` ya la recibe. Hay que pasarla desde `partida.update`, por ejemplo con `crearPartida({ oleadas, sensibilidad })` o un getter de la configuración.
 5. Activar la opción en el menú (`destino: 'configuracion'`) y registrar la escena en `main.js`.
 6. **Vibración:** helper `vibrar(ms)` que use `navigator.vibrate?.(ms)` solo si está activada. Llámalo al recibir un golpe (en `partida.js`, donde está `jugador.recibirGolpe()`).
@@ -179,7 +182,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 
 **Tareas:**
 1. `datos/capitulos.js`: por capítulo, `{ numero, nombre, zona, colorFondo, oleadas: [...] }` con una **lista fija** de oleadas (entre 5 y 8), diseñadas a mano con `linea`, `fila` y `ve`, de dificultad creciente entre capítulos. Prueba: todas ordenadas por `t`, con tipos válidos y 5 capítulos.
 2. **El capítulo termina** al vaciar la última oleada (sin repetirla), no en ciclos como hoy. El director repite las listas: agrega una opción, por ejemplo `crearDirector(oleadas, { repetir: false })`, que exponga `terminado`. Ojo: `partida.js` y `fantasma.js` usan el comportamiento actual.
-3. `escenas/capitulos.js` (selector): 5 tarjetas o botones con número y nombre. Por ahora todos desbloqueados; la feature 13 los bloquea.
+3. `escenas/capitulos.js` (selector): 5 tarjetas o botones con número y nombre. Desde la feature 13, solo los desbloqueados se pueden abrir.
 4. `escenas/historia.js`: como `escenas/juego.js` (pausa, HUD, fin), pero con las oleadas del capítulo, sin récord, y al terminar muestra **"CAPÍTULO COMPLETADO"** con Siguiente y Menú. Si muere: Reintentar y Menú. Conviene reutilizar `juego.js` con opciones en lugar de copiarlo. Pásale `sonar`, agrega sus escenas a `TEMA_ESCENA` en `main.js` y, si tiene pausa, inclúyela en la línea de `audio.pausarMusica(...)` del loop.
 5. **Novedades de zona:** asteroide como nuevo tipo en `datos/enemigos.js` (por ejemplo `vida: 99`, `puntos: 0`, gris, en distintos tamaños); visibilidad y camuflaje como efectos de dibujo en la escena o en la flota (camuflaje = alfa bajo cuando `golpeado` es 0 y un temporizador lo indica).
 6. Activar Modo Historia en el menú.
@@ -189,6 +192,8 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 
 ---
 
 ### Feature 11 — `feature/dialogos`
+
+> Ojo: el progreso ya existe. El diálogo `despues` debe mostrarse **antes** de "CAPÍTULO COMPLETADO", pero el desbloqueo ya ocurre en `completar()` de `escenas/juego.js`; si se mueve, cuida las pruebas de `tests/juego.test.js` sobre `resultado`.
 
 **Objetivo:** cuadros de diálogo con retrato antes y después de cada capítulo.
 
@@ -230,7 +235,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 
 
 ---
 
-### Feature 13 — `feature/guardado-progreso`
+### ~~Feature 13 — `feature/guardado-progreso`~~ (hecha, PR #12)
 
 **Objetivo:** que el progreso de la historia se guarde.
 
