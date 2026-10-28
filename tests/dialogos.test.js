@@ -43,3 +43,50 @@ test('el capítulo 1 lo abre Iriarte explicando la misión', () => {
   assert.equal(DIALOGOS[1].antes[0].quien, 'iriarte');
   assert.match(DIALOGOS[1].antes.map((l) => l.texto).join(' '), /faro/i);
 });
+
+const { crearDialogo } = await import('../www/js/sistemas/dialogo.js');
+const LINEAS = [
+  { quien: 'iriarte', texto: 'abcdefghij' },
+  { quien: 'nova', texto: 'xyz' },
+];
+
+test('las letras aparecen con el tiempo', () => {
+  const d = crearDialogo(LINEAS, { letrasPorSegundo: 10 });
+  assert.equal(d.linea.quien, 'iriarte');
+  assert.equal(d.visibles, 0);
+  d.update(0.35);
+  assert.equal(d.visibles, 3);
+  assert.equal(d.completa, false);
+  d.update(5);
+  assert.equal(d.visibles, 10, 'no pasa del largo del texto');
+  assert.equal(d.completa, true);
+});
+
+test('un toque con el texto a medias lo completa sin pasar de línea', () => {
+  const d = crearDialogo(LINEAS, { letrasPorSegundo: 10 });
+  d.update(0.2);
+  d.tocar();
+  assert.deepEqual([d.indice, d.visibles, d.completa], [0, 10, true]);
+});
+
+test('con el texto completo, un toque pasa a la siguiente línea desde cero', () => {
+  const d = crearDialogo(LINEAS, { letrasPorSegundo: 10 });
+  d.tocar();
+  d.tocar();
+  assert.deepEqual([d.indice, d.linea.quien, d.visibles], [1, 'nova', 0]);
+});
+
+test('después de la última línea el diálogo termina', () => {
+  const d = crearDialogo(LINEAS, { letrasPorSegundo: 10 });
+  for (let i = 0; i < 3; i++) d.tocar();
+  assert.equal(d.terminado, false);
+  d.tocar();
+  assert.equal(d.terminado, true);
+  d.tocar();
+  d.update(1);
+  assert.equal(d.terminado, true, 'tocar de más no rompe nada');
+});
+
+test('un diálogo sin líneas empieza terminado', () => {
+  assert.equal(crearDialogo([]).terminado, true);
+});

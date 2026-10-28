@@ -25,3 +25,43 @@ export function partirRenglones(texto, ancho = ANCHO_RENGLON) {
   if (actual) renglones.push(actual);
   return renglones;
 }
+
+// Texto progresivo: las letras de la línea actual aparecen con el tiempo.
+// Un toque con el texto a medias lo completa; con el texto completo pasa a la siguiente línea.
+export function crearDialogo(lineas, { letrasPorSegundo = 40 } = {}) {
+  let t = 0;
+
+  return {
+    indice: 0,
+    terminado: lineas.length === 0,
+
+    get linea() {
+      return lineas[this.indice] ?? null;
+    },
+
+    get visibles() {
+      if (!this.linea) return 0;
+      return Math.min(this.linea.texto.length, Math.floor(t * letrasPorSegundo));
+    },
+
+    get completa() {
+      return !!this.linea && this.visibles === this.linea.texto.length;
+    },
+
+    update(dt) {
+      if (!this.terminado) t += dt;
+    },
+
+    tocar() {
+      if (this.terminado) return;
+      if (!this.completa) {
+        // Tiempo suficiente para que se vea todo el texto.
+        t = this.linea.texto.length / letrasPorSegundo + 1;
+        return;
+      }
+      t = 0;
+      this.indice++;
+      if (this.indice >= lineas.length) this.terminado = true;
+    },
+  };
+}
