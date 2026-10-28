@@ -11,8 +11,12 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* render.js le da posición y tamaño según el marco (pantalla completa o columna en el PC). */
 canvas {
   display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh;

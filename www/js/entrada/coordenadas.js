@@ -8,6 +8,11 @@ export function aLogicas(clientX, clientY, anchoPx, altoPx, H) {
   };
 }
 
+// Igual que aLogicas, pero relativo al rectángulo del canvas (que en el PC está centrado).
+export function aLogicasEnRect(clientX, clientY, rect, H) {
+  return aLogicas(clientX - rect.left, clientY - rect.top, rect.width, rect.height, H);
+}
+
 // Estado del dedo que controla la nave. Solo cuenta el primer dedo que toca;
 // los demás se ignoran hasta que ese se levante.
 export function crearEstadoPuntero() {
