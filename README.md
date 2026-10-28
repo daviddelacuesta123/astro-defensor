@@ -11,10 +11,14 @@ Juego arcade de naves (shooter vertical) para móviles, construido como app híb
 
 ```bash
 npm install      # instala Capacitor
-npm run serve    # sirve www/ en http://localhost:8080 (usa la vista móvil del navegador; Ctrl+C para detener)
+npm run serve    # sirve www/ en http://localhost:8080 (en el PC se juega directo; Ctrl+C para detener)
 npm test         # pruebas automáticas de la lógica del juego (node --test)
 npm run android  # sincroniza www/ con Android y abre Android Studio
 ```
+
+## Jugar en el PC
+
+En pantallas anchas el juego se muestra como una columna centrada, con paneles de información y controles a los lados (si caben). Mouse: mantén el clic y arrastra para mover la nave. Teclado: flechas o WASD para mover, Esc o P para pausar.
 
 ## Estructura
 
