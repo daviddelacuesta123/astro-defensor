@@ -73,3 +73,79 @@ test('un enemigo con velocidad 1.5 se mueve 1.5 veces más rápido', () => {
   rapido.update(0.5, entorno());
   assert.ok(Math.abs(rapido.y - normal.y * 1.5) < 1e-9);
 });
+
+test('los asteroides bajan recto, lentos y sin disparar', () => {
+  for (const tipo of ['asteroide', 'asteroideGrande']) {
+    const disparos = [];
+    const a = crearEnemigo(tipo, 120, 0);
+    simular(a, 3, entorno(disparos));
+    assert.equal(a.x, 120, tipo);
+    assert.ok(TIPOS_ENEMIGO[tipo].vel < TIPOS_ENEMIGO.explorador.vel, tipo);
+    assert.deepEqual(disparos, [], tipo);
+  }
+});
+
+test('el asteroide grande casi no se puede destruir y no da puntos', () => {
+  const chico = TIPOS_ENEMIGO.asteroide;
+  const grande = TIPOS_ENEMIGO.asteroideGrande;
+  assert.ok(grande.vida >= 50);
+  assert.equal(grande.puntos, 0);
+  assert.ok(grande.ancho > chico.ancho);
+  // Romper una roca cuesta varios disparos y vale menos que un explorador.
+  assert.ok(chico.vida > TIPOS_ENEMIGO.tirador.vida);
+  assert.ok(chico.puntos < TIPOS_ENEMIGO.explorador.puntos);
+});
+
+const CAMUFLAJE = { ciclo: 3, oculto: 1 };
+
+test('sin camuflaje ningún enemigo se oculta', () => {
+  const flota = crearFlota();
+  const e = crearEnemigo('explorador', 100, 0);
+  flota.agregar(e);
+  for (let i = 0; i < 300; i++) {
+    flota.update(0.01, entorno(), 640);
+    assert.equal(flota.oculto(e), false);
+  }
+});
+
+test('con camuflaje el enemigo se oculta una parte de cada ciclo', () => {
+  const flota = crearFlota({ camuflaje: CAMUFLAJE, rng: () => 0 });
+  const e = crearEnemigo('tirador', 100, 0);
+  flota.agregar(e);
+  let oculto = 0;
+  for (let i = 0; i < 600; i++) {
+    flota.update(0.01, entorno(), 640);
+    if (flota.oculto(e)) oculto++;
+  }
+  // 1 de cada 3 segundos: alrededor de 200 de 600 cuadros.
+  assert.ok(oculto > 180 && oculto < 220, `cuadros ocultos: ${oculto}`);
+});
+
+test('un enemigo camuflado se ve mientras destella por un disparo', () => {
+  const flota = crearFlota({ camuflaje: CAMUFLAJE, rng: () => 0 });
+  const e = crearEnemigo('tirador', 100, 0);
+  flota.agregar(e);
+  flota.update(0.01, entorno(), 640);
+  assert.equal(flota.oculto(e), true);
+  e.golpeado = 0.08;
+  assert.equal(flota.oculto(e), false);
+});
+
+test('cada enemigo empieza el ciclo en un momento distinto', () => {
+  const valores = [0, 0.5];
+  const flota = crearFlota({ camuflaje: CAMUFLAJE, rng: () => valores.shift() });
+  const a = crearEnemigo('tirador', 100, 0);
+  const b = crearEnemigo('tirador', 200, 0);
+  flota.agregar(a);
+  flota.agregar(b);
+  flota.update(0.01, entorno(), 640);
+  assert.notEqual(flota.oculto(a), flota.oculto(b));
+});
+
+test('los asteroides no se camuflan', () => {
+  const flota = crearFlota({ camuflaje: CAMUFLAJE, rng: () => 0 });
+  const roca = crearEnemigo('asteroide', 100, 0);
+  flota.agregar(roca);
+  flota.update(0.01, entorno(), 640);
+  assert.equal(flota.oculto(roca), false);
+});

@@ -14,7 +14,10 @@ const DURACION_DESTELLO = 0.3;
 // Milisegundos de vibración al perder una vida y al perder la última.
 const VIBRA_GOLPE = 120;
 const VIBRA_MUERTE = 400;
-const COLOR_EXPLOSION = { explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
+const COLOR_EXPLOSION = {
+  explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn,
+  asteroide: COLORS.dim, asteroideGrande: COLORS.dim,
+};
 
 // Llama del propulsor: dos chorros bajo los motores que parpadean.
 function dibujarLlama(ctx, x, y) {
@@ -41,12 +44,16 @@ function dibujarEscudo(ctx, x, y, t) {
 // La usan el juego y la partida fantasma de la pantalla de carga. No dibuja estrellas ni HUD.
 // `sensibilidad` y `vibrar` vienen de la configuración, y `sonar(nombre)` toca un efecto.
 // La partida fantasma usa los defectos: no vibra ni suena.
-export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {}, sonar = () => {} }) {
+// En los capítulos, `repetir: false` hace que la partida se complete tras la última oleada,
+// y `camuflaje` lo aplica la flota (capítulo 3).
+export function crearPartida({
+  oleadas, sensibilidad = 1, vibrar = () => {}, sonar = () => {}, repetir = true, camuflaje = null,
+}) {
   const jugador = crearJugador({ x: W / 2, y: view.H - 100 });
   const balas = crearBalas();
   const balasEnemigas = crearBalas({ color: COLORS.danger, ancho: 3, largo: 6 });
-  const flota = crearFlota();
-  const director = crearDirector(oleadas);
+  const flota = crearFlota({ camuflaje });
+  const director = crearDirector(oleadas, { repetir });
   const powerups = crearPowerups();
   const explosiones = crearExplosiones();
   const entorno = {
@@ -72,7 +79,7 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {}, son
     puntos: 0,
     // Número de oleada actual del director (desde 0).
     oleada: 0,
-    // 'jugando' | 'muriendo' (la nave explotó) | 'terminada'
+    // 'jugando' | 'muriendo' (la nave explotó) | 'terminada' | 'completada' (capítulo superado)
     estado: 'jugando',
 
     update(dt, puntero) {
@@ -83,6 +90,7 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {}, son
         jugador.update(dt, puntero, view.H, disparar, sensibilidad);
         director.update(dt, flota);
         partida.oleada = director.oleada;
+        if (director.terminado) partida.estado = 'completada';
       }
       flota.update(dt, entorno, view.H);
       balas.update(dt, view.H);
@@ -125,7 +133,8 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {}, son
       balasEnemigas.draw(ctx);
       explosiones.draw(ctx);
 
-      if (partida.estado === 'jugando') {
+      // Al completar el capítulo la nave se queda en pantalla.
+      if (partida.estado === 'jugando' || partida.estado === 'completada') {
         // Mientras es invulnerable, la nave parpadea.
         const visible = jugador.invulnerable === 0 || Math.floor(t * 12) % 2 === 0;
         if (visible) {

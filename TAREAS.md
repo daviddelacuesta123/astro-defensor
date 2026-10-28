@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 188, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 220, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -38,13 +38,16 @@ www/
     config.js        W = 360 (ancho lógico fijo), view.H (alto según la pantalla), COLORS (paleta neón)
     render.js        canvas escalado a la pantalla (DPR hasta 3)
     util.js          clampDt, altoLogico, apuntar
-    escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (= Modo Libre), configuracion.js
+    escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (Modo Libre y Modo Historia),
+                     capitulos.js (selector), configuracion.js
     sistemas/        partida.js, fantasma.js, piloto.js, oleadas.js (director), generador.js,
                      colisiones.js, guardado.js, configuracion.js, vibracion.js,
                      sonido.js (notas, temas y efectos como datos), audio.js (Web Audio)
     entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
-    datos/           enemigos.js (tipos Vex), oleadas.js (formaciones y OLEADAS_PRUEBA)
-    graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones)
+    datos/           enemigos.js (tipos Vex y asteroides), oleadas.js (formaciones y OLEADAS_PRUEBA),
+                     capitulos.js (los 5 capítulos)
+    graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones),
+                     zonas.js (fondo de zona y velo de la nebulosa)
     entrada/         coordenadas.js (estado del dedo, toques), puntero.js (eventos del DOM)
     fondo/           estrellas.js
 scripts/servidor.mjs servidor de desarrollo
@@ -60,9 +63,9 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | **Gestor de escenas** (`escenas/gestor.js`) | Una sola pantalla activa | Una escena es un objeto con `entrar(params)`, `salir()`, `update(dt)`, `draw(ctx)` y opcionalmente `pausar()`. Se registra en `main.js` con `escenas.registrar('nombre', escena)` y se cambia con `irA('nombre')`. |
 | **Botones** (`graficos/ui.js`) | Menús dibujados en el canvas | `crearBoton({ texto, x, y, ancho, alto })` con `(x, y)` en el centro, `boton.contiene(px, py)` y `dibujarBoton(ctx, boton, color)`. Las escenas exponen `botones()` con los botones visibles: así se dibujan y así se prueban. |
 | **Toques** (`entrada/coordenadas.js`) | Detectar toques en botones | `puntero.tomarToques()` devuelve los toques nuevos y los vacía. Llámalo en `entrar()` para descartar el toque que trajo a la pantalla. Solo cuenta el primer dedo. |
-| **Partida** (`sistemas/partida.js`) | Simular una partida completa | `crearPartida({ oleadas })` devuelve `{ jugador, flota, balasEnemigas, puntos, oleada, estado: 'jugando' \| 'muriendo' \| 'terminada', update(dt, puntero), draw(ctx) }`. No dibuja estrellas ni HUD. `oleadas` puede ser una **lista** (se repite en ciclos) o una **función** `(n) => oleada` (infinito). |
+| **Partida** (`sistemas/partida.js`) | Simular una partida completa | `crearPartida({ oleadas, repetir, camuflaje, sensibilidad, vibrar, sonar })` devuelve `{ jugador, flota, balasEnemigas, powerups, puntos, oleada, estado: 'jugando' \| 'muriendo' \| 'terminada' \| 'completada', update(dt, puntero), draw(ctx) }`. No dibuja estrellas ni HUD. `oleadas` puede ser una **lista** (se repite en ciclos, o con `repetir: false` termina en `'completada'`) o una **función** `(n) => oleada` (infinito). |
 | **Oleada** | Datos de enemigos | Arreglo de `{ t, tipo, x, vel? }` ordenado por `t` (segundos). Formaciones listas: `linea`, `fila`, `ve` en `datos/oleadas.js`. |
-| **Enemigos** (`datos/enemigos.js`) | Tipos Vex | `explorador`, `zigzag`, `tirador`. Para agregar un tipo: datos aquí más un sprite en `graficos/sprites.js` (`SPRITES_ENEMIGO`). Hay una prueba que verifica que el tamaño del sprite coincide con `ancho`/`alto`. |
+| **Enemigos** (`datos/enemigos.js`) | Tipos Vex y obstáculos | `explorador`, `zigzag`, `tirador`, y los obstáculos `asteroide` y `asteroideGrande` (`obstaculo: true`, no se camuflan). Para agregar un tipo: datos aquí más un sprite en `graficos/sprites.js` (`SPRITES_ENEMIGO`). Hay una prueba que verifica que el tamaño del sprite coincide con `ancho`/`alto`. |
 | **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor), borrar(clave) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Claves en uso: `recordLibre`, `volMusica`, `volEfectos`, `vibracion`, `sensibilidad`. |
 | **Configuración** (`sistemas/configuracion.js`) | Ajustes del jugador | `crearConfiguracion(guardado)` devuelve `{ valores, cambiar(clave, valor), subir(clave), bajar(clave) }`; acota y guarda al cambiar. En `main.js` hay una sola instancia, `configuracion`, y `vibrar(ms)` (`sistemas/vibracion.js`), que solo vibra si el ajuste está activo. |
 | **Audio** (`sistemas/audio.js`, `sistemas/sonido.js`) | Efectos y música | En `main.js`, `sonar(nombre)` toca un efecto de `EFECTOS` (`disparo`, `explosion`, `golpe`, `powerup`, `bomba`, `boton`) y `audio.musica(tema)` cambia el tema de `TEMAS`. El tema de cada pantalla está en `TEMA_ESCENA` (`main.js`). Para un sonido nuevo: agregar sus capas en `EFECTOS`; para un tema nuevo, sus voces en `TEMAS` (una nota por corchea, `-` = sostener o silencio). Las escenas y la partida reciben `sonar` como parámetro opcional. |
@@ -102,12 +105,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 7 | `modo-libre` | #7 | Oleadas infinitas con dificultad creciente, aviso de oleada, récord guardado |
 | 8 | `configuracion` | #9 | Ajustes guardados (volúmenes, vibración, sensibilidad), borrar progreso con confirmación |
 | 9 | `audio` | #10 | Efectos y música chiptune con Web Audio, volúmenes de la configuración, pausa de la música |
+| 10 | `modo-historia` | #11 | Selector y 5 capítulos jugables; asteroides, nebulosa con visión reducida y camuflaje, oleadas densas |
 
-En el menú, **Modo Historia** muestra "PRÓXIMAMENTE". Para activarlo, en `escenas/menu.js` cambia el `destino: null` de su opción en `OPCIONES` por el nombre de la escena.
+**Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → **11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
@@ -158,7 +162,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 �
 
 ---
 
-### Feature 10 — `feature/modo-historia`
+### ~~Feature 10 — `feature/modo-historia`~~ (hecha, PR #11)
 
 **Objetivo:** selector de capítulos y los 5 capítulos jugables, por ahora sin diálogos ni jefes.
 
@@ -199,7 +203,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 �
 2. Retratos en pixel art (alrededor de 16×16 a escala 3) en `graficos/sprites.js`: Nova (casco cian), Iriarte (uniforme y gorra) y la Reina (Vex roja y amarilla).
 3. `escenas/dialogo.js`: cuadro abajo con retrato, nombre y texto que aparece **letra por letra**. Un toque completa el texto; otro toque pasa a la siguiente línea. Botón **Saltar**. Al terminar, `irA(destino, params)` (por ejemplo, al capítulo).
 4. Pruebas: la lógica del texto progresivo (cuántas letras se ven en el tiempo t, toque para completar, toque para avanzar, fin), separada del dibujo.
-5. Flujo: selector → diálogo `antes` → capítulo → diálogo `despues` → "CAPÍTULO COMPLETADO".
+5. Flujo: selector → diálogo `antes` → capítulo → diálogo `despues` → "CAPÍTULO COMPLETADO". Hoy el selector llama `irA('historia', { capitulo })` y SIGUIENTE llama `this.entrar({ capitulo: n + 1 })` dentro de `escenas/juego.js`: esos dos puntos son los que hay que desviar al diálogo.
 
 **Listo cuando:** cada capítulo tiene diálogo antes y después, se puede saltar y el texto se lee bien en un celular.
 
@@ -218,7 +222,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 �
    - Acorazado: mucha vida, torretas, ráfagas apuntadas.
    - Reina: 3 fases según la vida (75 % y 35 %), cada una más agresiva, e invoca exploradores.
 3. **Barra de vida del jefe** arriba de la pantalla, con su nombre.
-4. Al vaciar la última oleada del capítulo, aviso "¡ALERTA!" y entra el jefe desde arriba. Al morir: gran explosión, muchos puntos y fin del capítulo.
+4. Al vaciar la última oleada del capítulo, aviso "¡ALERTA!" y entra el jefe desde arriba. Al morir: gran explosión, muchos puntos y fin del capítulo. Hoy el capítulo termina cuando `director.terminado` pasa a `true` (en `sistemas/partida.js` pone `estado = 'completada'`): ahí es donde debe entrar el jefe en lugar de completar.
 5. Sprites grandes (alrededor de 30×20 a escala 3).
 6. Pruebas: cambio de fase por vida, patrones de disparo (con callback espía como en `tests/enemigos.test.js`), muerte que termina el capítulo.
 
@@ -260,6 +264,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 �
 - **Pausa con el dedo en pantalla:** mientras un dedo maneja la nave, un segundo dedo se ignora, así que no se puede tocar la pausa sin soltar. Es una decisión consciente (evita toques accidentales), pero si molesta en el celular, el botón de pausa puede aceptar cualquier dedo (`entrada/coordenadas.js`).
 - **Balance:** con disparo triple el juego se vuelve fácil. Los números están en `datos/enemigos.js`, `sistemas/generador.js` (aceleración 4 % por oleada, tope 1,6×) y `entidades/powerups.js` (12 % de probabilidad de soltar). Hay que ajustarlos jugando en el celular.
 - **`OLEADAS_PRUEBA`** sigue en uso para la partida fantasma de la carga y el menú.
-- **`escenas/juego.js` es el Modo Libre** (registrado como `'juego'`). Si se generaliza para la historia, cuida que las pruebas de `tests/juego.test.js` sigan pasando.
+- **`escenas/juego.js` sirve a los dos modos:** registrado como `'juego'` (Modo Libre) y como `'historia'` (con `capitulos`). Las pruebas de ambos están en `tests/juego.test.js`.
+- **Balance de los capítulos:** las oleadas de `datos/capitulos.js` están diseñadas a mano pero sin probar en un celular; el capítulo 3 (visión reducida) y el 4 (oleadas densas) pueden necesitar ajuste.
 - **Todavía no se ha probado en un Android real.** La primera prueba en dispositivo puede mostrar problemas de tamaño o rendimiento.
 - Para probar en el navegador sin mouse táctil: en DevTools, modo dispositivo, el arrastre del mouse simula el dedo.
