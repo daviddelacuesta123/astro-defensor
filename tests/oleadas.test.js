@@ -100,3 +100,31 @@ test('el director crea cada enemigo con la velocidad de su aparición', () => {
   const [rapido, normal] = flota.lista;
   assert.ok(Math.abs((rapido.y + 20) - 2 * (normal.y + 20)) < 1e-9);
 });
+
+test('sin repetir, tras vaciar la última oleada y la pausa queda terminado', () => {
+  const flota = crearFlota();
+  const director = crearDirector([[e(0)], [e(0)]], { pausa: 1, repetir: false });
+  director.update(0.01, flota);
+  flota.lista.length = 0;
+  director.update(0.01, flota);
+  director.update(1.1, flota);
+  flota.lista.length = 0;
+  director.update(0.01, flota);
+  assert.equal(director.terminado, false, 'todavía en la pausa final');
+  assert.equal(director.oleada, 1, 'no anuncia una oleada que no existe');
+  director.update(1.1, flota);
+  assert.equal(director.terminado, true);
+  director.update(5, flota);
+  assert.equal(flota.lista.length, 0, 'no vuelve a empezar');
+  assert.deepEqual([director.oleada, director.ciclo], [1, 0]);
+});
+
+test('repitiendo (por defecto) nunca termina', () => {
+  const flota = crearFlota();
+  const director = crearDirector([[e(0)]], { pausa: 0 });
+  for (let i = 0; i < 5; i++) {
+    director.update(0.01, flota);
+    flota.lista.length = 0;
+  }
+  assert.equal(director.terminado, false);
+});
