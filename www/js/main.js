@@ -3,7 +3,10 @@ import { canvas, ctx, resize, beginFrame } from './render.js';
 import { clampDt } from './util.js';
 import { crearGestorEscenas } from './escenas/gestor.js';
 import { escenaCarga } from './escenas/carga.js';
+import { escenaMenu } from './escenas/menu.js';
 import { escenaJuego } from './escenas/juego.js';
+import { crearFantasma } from './sistemas/fantasma.js';
+import { OLEADAS_PRUEBA } from './datos/oleadas.js';
 import { crearEstrellas } from './fondo/estrellas.js';
 import { crearEstadoPuntero } from './entrada/coordenadas.js';
 import { conectarPuntero } from './entrada/puntero.js';
@@ -17,8 +20,10 @@ conectarPuntero(canvas, puntero);
 const estrellas = crearEstrellas({ alto: view.H });
 const escenas = crearGestorEscenas();
 const irA = (nombre) => escenas.ir(nombre);
-escenas.registrar('carga', escenaCarga({ estrellas, puntero, irA }));
-escenas.registrar('juego', escenaJuego({ estrellas, puntero }));
+const fantasma = crearFantasma({ oleadas: OLEADAS_PRUEBA });
+escenas.registrar('carga', escenaCarga({ estrellas, puntero, irA, fantasma }));
+escenas.registrar('menu', escenaMenu({ estrellas, puntero, irA, fantasma }));
+escenas.registrar('juego', escenaJuego({ estrellas, puntero, irA }));
 escenas.ir('carga');
 
 // Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa.
