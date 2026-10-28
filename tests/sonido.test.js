@@ -27,7 +27,7 @@ test('volumenAGanancia: 0 es silencio, 100 es 1 y crece sin pasarse', () => {
 });
 
 test('hay un efecto para cada evento del juego, con capas válidas', () => {
-  assert.deepEqual(Object.keys(EFECTOS).sort(), ['bomba', 'boton', 'disparo', 'explosion', 'golpe', 'powerup']);
+  assert.deepEqual(Object.keys(EFECTOS).sort(), ['alerta', 'bomba', 'boton', 'disparo', 'explosion', 'golpe', 'powerup']);
   for (const [nombre, capas] of Object.entries(EFECTOS)) {
     assert.ok(capas.length > 0, nombre);
     for (const c of capas) {
@@ -99,4 +99,10 @@ test('una nota se sostiene durante los silencios que le siguen', () => {
 
 test('el paso da la vuelta al llegar al final del tema', () => {
   assert.deepEqual(notasDelPaso(PRUEBA, 4), notasDelPaso(PRUEBA, 0));
+});
+
+test('la alarma del jefe alterna dos tonos varias veces', () => {
+  const tonos = new Set(EFECTOS.alerta.map((c) => c.de));
+  assert.equal(tonos.size, 2);
+  assert.ok(EFECTOS.alerta.length >= 4);
 });

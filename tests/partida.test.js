@@ -164,3 +164,75 @@ test('el camuflaje de la partida llega a la flota', () => {
   p.update(0.01, quieto);
   assert.equal(p.flota.oculto(e), true);
 });
+
+// Capítulo de una oleada que termina con el crucero.
+function conJefe() {
+  const sonidos = [];
+  const p = crearPartida({
+    oleadas: [[{ t: 0, tipo: 'explorador', x: 180 }]], repetir: false, jefe: 'crucero',
+    sonar: (nombre) => sonidos.push(nombre),
+  });
+  p.update(0.01, quieto);
+  p.flota.lista.length = 0;
+  simular(p, 2.5);
+  return { p, sonidos };
+}
+
+test('al terminar las oleadas suena la alarma y entra el jefe, sin completar todavía', () => {
+  const { p, sonidos } = conJefe();
+  assert.equal(p.estado, 'jugando');
+  assert.ok(p.jefe, 'apareció el jefe');
+  assert.ok(p.flota.lista.includes(p.jefe));
+  assert.ok(p.alerta > 0);
+  assert.ok(sonidos.includes('alerta'));
+});
+
+test('derrotar al jefe suma sus puntos una vez, limpia la pantalla y luego completa', () => {
+  const { p } = conJefe();
+  p.flota.agregar(crearEnemigo('explorador', 60, 100));
+  p.balasEnemigas.disparar(60, 300, 0);
+  const puntos = p.puntos;
+  p.jefe.vida = 0;
+  p.update(0.01, quieto);
+  assert.equal(p.puntos, puntos + p.jefe.puntos);
+  assert.deepEqual([p.flota.lista.length, p.balasEnemigas.lista.length], [0, 0]);
+  assert.equal(p.estado, 'jugando', 'primero la gran explosión');
+  simular(p, 2.5);
+  assert.equal(p.estado, 'completada');
+  assert.equal(p.puntos, puntos + p.jefe.puntos, 'no vuelve a sumar');
+});
+
+test('matar al jefe a balazos también lo derrota, sin contar doble', () => {
+  const { p } = conJefe();
+  while (p.jefe.entrando) p.update(0.05, quieto);
+  const puntos = p.puntos;
+  p.jefe.vida = 1;
+  // La nave sigue al jefe por debajo hasta que una bala lo alcanza.
+  for (let i = 0; i < 300 && p.jefe.vida > 0; i++) {
+    p.jugador.x = p.jefe.x;
+    p.jugador.invulnerable = 1;
+    p.update(0.01, quieto);
+  }
+  assert.ok(p.jefe.vida <= 0);
+  simular(p, 0.5);
+  assert.equal(p.puntos, puntos + p.jefe.puntos);
+});
+
+test('la bomba le hace daño al jefe pero no lo mata de un golpe', () => {
+  const { p } = conJefe();
+  const vida = p.jefe.vida;
+  p.powerups.lista.push({ x: p.jugador.x, y: p.jugador.y, tipo: 'bomba', t: 0 });
+  p.update(0.01, quieto);
+  assert.ok(p.jefe.vida < vida && p.jefe.vida > 0);
+  assert.ok(p.flota.lista.includes(p.jefe));
+});
+
+test('lo que invoca el jefe llega a la flota', () => {
+  const p = crearPartida({ oleadas: SIN_OLEADAS });
+  const antes = p.flota.lista.length;
+  const jefe = { jefe: true, x: 0, y: -999, ancho: 1, alto: 1, vida: 1, golpeado: 0, update: (dt, e) => e.invocar('asteroide', 100, 50) };
+  p.flota.agregar(jefe);
+  p.update(0.01, quieto);
+  assert.ok(p.flota.lista.some((e) => e.tipo === 'asteroide'));
+  assert.ok(p.flota.lista.length > antes);
+});

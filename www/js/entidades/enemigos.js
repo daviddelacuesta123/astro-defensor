@@ -75,8 +75,11 @@ export function crearFlota({ camuflaje = null, rng = Math.random } = {}) {
     },
 
     // Mientras destella por un disparo se ve: así el jugador sabe que le está dando.
+    // Un jefe decide él mismo cuándo se camufla (el Acechador).
     oculto(enemigo) {
-      if (!camuflaje || TIPOS_ENEMIGO[enemigo.tipo].obstaculo || enemigo.golpeado > 0) return false;
+      if (enemigo.golpeado > 0) return false;
+      if (enemigo.jefe) return enemigo.camuflado;
+      if (!camuflaje || TIPOS_ENEMIGO[enemigo.tipo].obstaculo) return false;
       return (tiempo + desfases.get(enemigo)) % camuflaje.ciclo < camuflaje.oculto;
     },
 
@@ -91,7 +94,8 @@ export function crearFlota({ camuflaje = null, rng = Math.random } = {}) {
     draw(ctx) {
       for (const e of lista) {
         if (this.oculto(e)) ctx.globalAlpha = ALFA_CAMUFLADO;
-        dibujarSprite(ctx, SPRITES_ENEMIGO[e.tipo], e.x, e.y, e.golpeado > 0 ? COLORS.text : undefined);
+        // Los jefes traen su propio sprite, que cambia con la fase.
+        dibujarSprite(ctx, e.sprite ?? SPRITES_ENEMIGO[e.tipo], e.x, e.y, e.golpeado > 0 ? COLORS.text : undefined);
         ctx.globalAlpha = 1;
       }
     },

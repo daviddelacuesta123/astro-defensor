@@ -242,9 +242,11 @@ test('historia: el capítulo 1 se juega de principio a fin sin anunciar oleadas 
   const { escena } = prepararHistoria(1);
   const total = CAPITULOS[0].oleadas.length;
   let maxAnunciada = 0;
-  // Cada enemigo que aparece se elimina al instante: solo se prueba el avance del capítulo.
+  // Cada enemigo que aparece se elimina al instante, y el jefe también: solo se prueba el avance.
   for (let i = 0; i < 6000 && escena.estado === 'jugando'; i++) {
-    escena.partida.flota.lista.length = 0;
+    const { flota, jefe } = escena.partida;
+    for (let j = flota.lista.length - 1; j >= 0; j--) if (!flota.lista[j].jefe) flota.lista.splice(j, 1);
+    if (jefe) jefe.vida = 0;
     escena.update(0.02);
     if (escena.avisoOleada) maxAnunciada = Math.max(maxAnunciada, escena.avisoOleada.n);
   }
@@ -328,4 +330,33 @@ test('historia con diálogos: REINTENTAR repite el capítulo sin diálogo', () =
   tocarBoton('REINTENTAR');
   assert.deepEqual(viajes, []);
   assert.deepEqual([escena.estado, escena.capitulo.numero], ['jugando', 4]);
+});
+
+const { crearJefe } = await import('../www/js/entidades/jefes.js');
+
+test('historia: tras la última oleada entra el jefe del capítulo y no se completa todavía', () => {
+  const { escena } = prepararHistoria(1);
+  for (let i = 0; i < 6000 && !escena.partida.jefe; i++) {
+    escena.partida.flota.lista.length = 0;
+    escena.update(0.02);
+  }
+  assert.equal(escena.partida.jefe.tipo, 'crucero');
+  assert.equal(escena.estado, 'jugando');
+  assert.ok(escena.partida.alerta > 0);
+});
+
+test('historia: el cambio de fase del jefe se anuncia', () => {
+  const { escena } = prepararHistoria(5);
+  escena.partida.jefe = crearJefe('reina');
+  escena.update(0.01);
+  assert.equal(escena.avisoFase, null);
+  escena.partida.jefe.vida = 100;
+  escena.partida.jefe.update(0.01, {});
+  escena.update(0.01);
+  assert.equal(escena.avisoFase.texto, '¡FASE 2!');
+});
+
+test('modo libre: no hay jefe', () => {
+  const { escena } = preparar();
+  assert.equal(escena.partida.jefe, null);
 });

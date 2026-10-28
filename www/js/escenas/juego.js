@@ -1,7 +1,7 @@
 import { W, view, COLORS } from '../config.js';
 import { crearPartida } from '../sistemas/partida.js';
 import { crearBoton, dibujarBoton, dibujarVelo } from '../graficos/ui.js';
-import { dibujarHUD } from '../graficos/hud.js';
+import { dibujarHUD, dibujarBarraJefe } from '../graficos/hud.js';
 import { dibujarFondoZona, dibujarNebulosa } from '../graficos/zonas.js';
 
 const BOTON_PAUSA = crearBoton({ texto: 'PAUSA', x: W - 24, y: 24, ancho: 32, alto: 32 });
@@ -9,6 +9,7 @@ const CLAVE_RECORD = 'recordLibre';
 const DURACION_AVISO_OLEADA = 2;
 // El título del capítulo tiene más texto que el aviso de oleada: se deja más tiempo.
 const DURACION_TITULO = 3;
+const DURACION_AVISO_FASE = 1.5;
 
 // Botones centrados uno debajo de otro, desde la altura `desde` (fracción del alto).
 const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
@@ -36,6 +37,9 @@ export function escenaJuego({
     resultado: null,
     // { n (desde 1), restante } mientras se anuncia una oleada.
     avisoOleada: null,
+    // { texto, restante } cuando el jefe pasa a una fase más agresiva.
+    avisoFase: null,
+    faseJefe: 1,
 
     // Botones visibles en el estado actual. Se calculan al usarlos porque dependen del alto.
     botones() {
@@ -66,11 +70,14 @@ export function escenaJuego({
         sonar,
         repetir: !this.capitulo,
         camuflaje: this.capitulo?.efectos.camuflaje ?? null,
+        jefe: this.capitulo?.jefe ?? null,
       });
       this.estado = 'jugando';
       this.record = this.capitulo ? 0 : guardado.leerNumero(CLAVE_RECORD);
       this.nuevoRecord = false;
       this.resultado = null;
+      this.avisoFase = null;
+      this.faseJefe = 1;
       this.avisoOleada = { n: 1, restante: this.capitulo ? DURACION_TITULO : DURACION_AVISO_OLEADA };
       puntero.tomarToques();
     },
@@ -103,6 +110,15 @@ export function escenaJuego({
       } else if (this.avisoOleada) {
         this.avisoOleada.restante -= dt;
         if (this.avisoOleada.restante <= 0) this.avisoOleada = null;
+      }
+
+      const { jefe } = this.partida;
+      if (jefe && jefe.fase > this.faseJefe) {
+        this.faseJefe = jefe.fase;
+        this.avisoFase = { texto: `¡FASE ${jefe.fase}!`, restante: DURACION_AVISO_FASE };
+      } else if (this.avisoFase) {
+        this.avisoFase.restante -= dt;
+        if (this.avisoFase.restante <= 0) this.avisoFase = null;
       }
 
       if (this.estado !== 'jugando') return;
@@ -153,10 +169,13 @@ export function escenaJuego({
       const vision = this.capitulo?.efectos.vision;
       if (vision) dibujarNebulosa(ctx, this.partida.jugador.x, this.partida.jugador.y, vision);
       dibujarHUD(ctx, { puntos: this.partida.puntos, vidas: this.partida.jugador.vidas }, BOTON_PAUSA);
+      const { jefe } = this.partida;
+      if (jefe && jefe.vida > 0) dibujarBarraJefe(ctx, jefe);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (this.avisoOleada && this.estado === 'jugando') this.dibujarAviso(ctx);
+      if (this.estado === 'jugando') this.dibujarAvisosJefe(ctx);
 
       if (this.estado === 'pausa') dibujarVelo(ctx, W, view.H, 'PAUSA');
       if (this.estado === 'fin') this.dibujarFin(ctx);
@@ -187,6 +206,26 @@ export function escenaJuego({
         ctx.fillText(`OLEADA ${n}${total}`, W / 2, view.H * 0.4);
       }
       ctx.globalAlpha = 1;
+    },
+
+    // "¡ALERTA!" parpadeando con el nombre del jefe, y el aviso de cambio de fase.
+    dibujarAvisosJefe(ctx) {
+      const { jefe, alerta } = this.partida;
+      if (jefe && alerta > 0 && Math.floor(alerta * 4) % 2 === 0) {
+        ctx.fillStyle = COLORS.danger;
+        ctx.font = 'bold 32px monospace';
+        ctx.fillText('¡ALERTA!', W / 2, view.H * 0.42);
+        ctx.fillStyle = COLORS.text;
+        ctx.font = 'bold 14px monospace';
+        ctx.fillText(jefe.nombre, W / 2, view.H * 0.42 + 32);
+      }
+      if (this.avisoFase) {
+        ctx.globalAlpha = Math.min(1, this.avisoFase.restante / 0.3);
+        ctx.fillStyle = COLORS.pink;
+        ctx.font = 'bold 24px monospace';
+        ctx.fillText(this.avisoFase.texto, W / 2, view.H * 0.45);
+        ctx.globalAlpha = 1;
+      }
     },
 
     dibujarFin(ctx) {

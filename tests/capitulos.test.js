@@ -64,3 +64,9 @@ test('el Faro Omega (capítulo 4) tiene las oleadas más densas hasta ese punto'
   const densidad = (c) => naves(c).length / c.oleadas.length;
   assert.ok(densidad(CAPITULOS[3]) > densidad(CAPITULOS[2]) * 1.4);
 });
+
+test('cada capítulo termina con su jefe, en el orden de la historia', async () => {
+  const { TIPOS_JEFE } = await import('../www/js/datos/jefes.js');
+  assert.deepEqual(CAPITULOS.map((c) => c.jefe), ['crucero', 'minero', 'acechador', 'acorazado', 'reina']);
+  for (const c of CAPITULOS) assert.ok(c.jefe in TIPOS_JEFE);
+});

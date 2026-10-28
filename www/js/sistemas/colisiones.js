@@ -39,6 +39,7 @@ export function impactarEnemigos(balas, flota) {
 }
 
 // Balas enemigas y choques contra la nave. Devuelve si algo la tocó.
+// Un enemigo que choca se destruye; un jefe no: sigue ahí y la nave pierde la vida igual.
 export function golpearJugador(jugador, balasEnemigas, flota) {
   const caja = cajaJugador(jugador);
   let tocado = false;
@@ -50,7 +51,7 @@ export function golpearJugador(jugador, balasEnemigas, flota) {
   }
   for (let i = flota.lista.length - 1; i >= 0; i--) {
     if (chocan(caja, flota.lista[i])) {
-      flota.lista.splice(i, 1);
+      if (!flota.lista[i].jefe) flota.lista.splice(i, 1);
       tocado = true;
     }
   }
