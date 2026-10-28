@@ -1,5 +1,6 @@
 import { view } from './config.js';
 import { canvas, ctx, resize, beginFrame } from './render.js';
+import { cabenPaneles } from './marco.js';
 import { clampDt } from './util.js';
 import { crearGestorEscenas } from './escenas/gestor.js';
 import { escenaCarga } from './escenas/carga.js';
@@ -24,8 +25,15 @@ import { crearEstadoPuntero } from './entrada/coordenadas.js';
 import { conectarPuntero } from './entrada/puntero.js';
 import { crearTeclado } from './entrada/teclado.js';
 
-window.addEventListener('resize', resize);
-resize();
+// En el PC el juego va en una columna centrada; los paneles laterales ocupan los costados si caben.
+function ajustarPantalla() {
+  const marco = resize();
+  document.body.classList.toggle('escritorio', marco.escritorio);
+  document.body.classList.toggle('con-paneles', cabenPaneles(marco));
+  document.body.style.setProperty('--lado', `${marco.x}px`);
+}
+window.addEventListener('resize', ajustarPantalla);
+ajustarPantalla();
 
 const puntero = crearEstadoPuntero();
 conectarPuntero(canvas, puntero);

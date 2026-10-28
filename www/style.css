@@ -22,3 +22,87 @@ canvas {
   height: 100dvh;
   image-rendering: pixelated;
 }
+
+/* ---- Vista de escritorio (PC) ---- */
+
+/* main.js agrega `escritorio` al body cuando el juego va en una columna centrada. */
+body.escritorio {
+  background: radial-gradient(ellipse at center, #0c1230 0%, #05060f 70%);
+}
+
+body.escritorio canvas {
+  box-shadow: 0 0 0 1px #1d2a4a, 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.panel {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--lado, 0px);
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 32px;
+  color: #c8d4ee;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* `con-paneles` solo cuando hay al menos 220 px a cada lado del juego. */
+body.con-paneles .panel { display: flex; }
+#panel-izquierdo { left: 0; }
+#panel-derecho { right: 0; }
+
+.panel-contenido { max-width: 300px; }
+.panel p { margin: 0 0 12px; }
+.panel ul { margin: 0 0 12px; padding-left: 18px; }
+.panel li { margin-bottom: 6px; }
+.panel strong { color: #e8f1ff; }
+
+.panel .titulo {
+  margin: 0 0 6px;
+  color: #3fe0ff;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: 3px;
+  text-shadow: 3px 3px 0 #ff5ad6;
+}
+
+.panel .subtitulo {
+  color: #ffe14a;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.panel h2 {
+  margin: 20px 0 10px;
+  color: #ffe14a;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.panel h3 {
+  margin: 14px 0 6px;
+  color: #3fe0ff;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.panel .teclas { list-style: none; padding-left: 0; }
+.panel .nota { color: #8d9cc8; }
+
+.panel kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  margin: 0 2px 4px 0;
+  padding: 1px 6px;
+  border: 1px solid #3fe0ff;
+  border-bottom-width: 3px;
+  border-radius: 4px;
+  color: #e8f1ff;
+  font-family: monospace;
+  text-align: center;
+}

@@ -22,3 +22,11 @@ test('la columna nunca es más ancha que la ventana', () => {
   const m = calcularMarco(300, 400);
   assert.ok(m.ancho <= 300 && m.x >= 0);
 });
+
+test('los paneles laterales solo se muestran si hay al menos 220 px a cada lado', async () => {
+  const { cabenPaneles } = await import('../www/js/marco.js');
+  assert.equal(cabenPaneles(calcularMarco(1366, 768)), true);
+  assert.equal(cabenPaneles(calcularMarco(1920, 1080)), true);
+  assert.equal(cabenPaneles(calcularMarco(800, 1000)), false);
+  assert.equal(cabenPaneles(calcularMarco(390, 844)), false);
+});

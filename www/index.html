@@ -8,7 +8,39 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Paneles laterales: solo se muestran en el PC cuando hay espacio a los lados del juego. -->
+  <aside class="panel" id="panel-izquierdo" aria-label="Sobre el juego">
+    <div class="panel-contenido">
+      <h1 class="titulo">ASTRO<br>DEFENSOR</h1>
+      <p class="subtitulo">LA ÚLTIMA SEÑAL</p>
+      <p>Año 2387. El Enjambre Vex apaga los faros que unen la colonia de Kepler-442 con la Tierra.</p>
+      <p>Pilota el caza <strong>AD-7 "Defensor"</strong> y recupera la señal.</p>
+      <h2>MODOS</h2>
+      <ul>
+        <li><strong>Historia:</strong> 5 capítulos con un jefe al final de cada uno.</li>
+        <li><strong>Libre:</strong> oleadas infinitas. ¿Hasta dónde llegas?</li>
+      </ul>
+    </div>
+  </aside>
+
   <canvas id="game"></canvas>
+
+  <aside class="panel" id="panel-derecho" aria-label="Controles">
+    <div class="panel-contenido">
+      <h2>CONTROLES</h2>
+      <h3>MOUSE</h3>
+      <p>Mantén el clic y arrastra para mover la nave. Haz clic en los botones de los menús.</p>
+      <h3>TECLADO</h3>
+      <ul class="teclas">
+        <li><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> mover</li>
+        <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> también mueven</li>
+        <li><kbd>Esc</kbd> o <kbd>P</kbd> pausa</li>
+      </ul>
+      <p class="nota">La nave dispara sola.</p>
+      <p class="nota">También disponible en Android.</p>
+    </div>
+  </aside>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
