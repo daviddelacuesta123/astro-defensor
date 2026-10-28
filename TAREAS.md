@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 128, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 154, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -38,9 +38,9 @@ www/
     config.js        W = 360 (ancho lógico fijo), view.H (alto según la pantalla), COLORS (paleta neón)
     render.js        canvas escalado a la pantalla (DPR hasta 3)
     util.js          clampDt, altoLogico, apuntar
-    escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (= Modo Libre)
+    escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (= Modo Libre), configuracion.js
     sistemas/        partida.js, fantasma.js, piloto.js, oleadas.js (director), generador.js,
-                     colisiones.js, guardado.js
+                     colisiones.js, guardado.js, configuracion.js, vibracion.js
     entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
     datos/           enemigos.js (tipos Vex), oleadas.js (formaciones y OLEADAS_PRUEBA)
     graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones)
@@ -62,7 +62,8 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | **Partida** (`sistemas/partida.js`) | Simular una partida completa | `crearPartida({ oleadas })` devuelve `{ jugador, flota, balasEnemigas, puntos, oleada, estado: 'jugando' \| 'muriendo' \| 'terminada', update(dt, puntero), draw(ctx) }`. No dibuja estrellas ni HUD. `oleadas` puede ser una **lista** (se repite en ciclos) o una **función** `(n) => oleada` (infinito). |
 | **Oleada** | Datos de enemigos | Arreglo de `{ t, tipo, x, vel? }` ordenado por `t` (segundos). Formaciones listas: `linea`, `fila`, `ve` en `datos/oleadas.js`. |
 | **Enemigos** (`datos/enemigos.js`) | Tipos Vex | `explorador`, `zigzag`, `tirador`. Para agregar un tipo: datos aquí más un sprite en `graficos/sprites.js` (`SPRITES_ENEMIGO`). Hay una prueba que verifica que el tamaño del sprite coincide con `ancho`/`alto`. |
-| **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Clave en uso: `recordLibre`. |
+| **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor), borrar(clave) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Claves en uso: `recordLibre`, `volMusica`, `volEfectos`, `vibracion`, `sensibilidad`. |
+| **Configuración** (`sistemas/configuracion.js`) | Ajustes del jugador | `crearConfiguracion(guardado)` devuelve `{ valores, cambiar(clave, valor), subir(clave), bajar(clave) }`; acota y guarda al cambiar. En `main.js` hay una sola instancia, `configuracion`, y `vibrar(ms)` (`sistemas/vibracion.js`), que solo vibra si el ajuste está activo. |
 | **Sprites** (`graficos/sprites.js`) | Pixel art | Arreglos de texto con una letra por color (`.` = transparente), `paleta` y `escala`. `dibujarSprite(ctx, sprite, x, y, colorUnico?)`. |
 
 ### Convenciones
@@ -97,16 +98,17 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 5 | `pantalla-carga` | #5 | Logo con fuente pixel, partida fantasma con piloto automático |
 | 6 | `menu-principal` | #6 | Menú y navegación carga → menú → juego → menú; servidor de desarrollo |
 | 7 | `modo-libre` | #7 | Oleadas infinitas con dificultad creciente, aviso de oleada, récord guardado |
+| 8 | `configuracion` | #9 | Ajustes guardados (volúmenes, vibración, sensibilidad), borrar progreso con confirmación |
 
-En el menú, **Modo Historia** y **Configuración** muestran "PRÓXIMAMENTE". Para activarlos, en `escenas/menu.js` cambia el `destino: null` de cada opción en `OPCIONES` por el nombre de la escena.
+En el menú, **Modo Historia** muestra "PRÓXIMAMENTE". Para activarlo, en `escenas/menu.js` cambia el `destino: null` de su opción en `OPCIONES` por el nombre de la escena.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: **8 → 9 → 10 → 11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → **9 → 10 → 11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
-### Feature 8 — `feature/configuracion`
+### ~~Feature 8 — `feature/configuracion`~~ (hecha, PR #9)
 
 **Objetivo:** pantalla de ajustes con persistencia.
 
@@ -122,7 +124,7 @@ Orden sugerido por dependencias: **8 → 9 → 10 → 11 → 12 → 13 → 14**.
 **Tareas:**
 1. `sistemas/configuracion.js` (puro): `crearConfiguracion(guardado)` con `valores` y `cambiar(clave, valor)`. Debe acotar los rangos y guardar al cambiar. Claves sugeridas: `volMusica`, `volEfectos`, `vibracion` (1/0), `sensibilidad`. Pruebas: valores por defecto, acotado (por ejemplo, 150 → 100), persiste y relee.
 2. `escenas/configuracion.js`: filas con `−` / `+` para los números y un interruptor para la vibración, dibujadas en el canvas; usa `botones()` como el resto. Pruebas con la misma técnica de `tests/menu.test.js`: tocar el botón por su texto.
-3. **Borrar progreso**: por ahora borra `recordLibre` (pon 0 con `guardado.escribir`). En la feature 13 se suma el progreso de capítulos. Conviene agregar `guardado.borrar(clave)`, con su prueba.
+3. **Borrar progreso**: por ahora borra `recordLibre`. En la feature 13 se suma el progreso de capítulos (agregar las claves a `CLAVES_PROGRESO` en `escenas/configuracion.js`). Conviene agregar `guardado.borrar(clave)`, con su prueba.
 4. **Conectar la sensibilidad:** `jugador.update(dt, puntero, alto, disparar, sensibilidad)` ya la recibe. Hay que pasarla desde `partida.update`, por ejemplo con `crearPartida({ oleadas, sensibilidad })` o un getter de la configuración.
 5. Activar la opción en el menú (`destino: 'configuracion'`) y registrar la escena en `main.js`.
 6. **Vibración:** helper `vibrar(ms)` que use `navigator.vibrate?.(ms)` solo si está activada. Llámalo al recibir un golpe (en `partida.js`, donde está `jugador.recibirGolpe()`).
@@ -136,7 +138,7 @@ Orden sugerido por dependencias: **8 → 9 → 10 → 11 → 12 → 13 → 14**.
 **Objetivo:** efectos y música sintetizados con **Web Audio API**, sin archivos, respetando la configuración.
 
 **Tareas:**
-1. `sistemas/audio.js` con un `AudioContext` y dos `GainNode` (música y efectos) conectados al volumen de la configuración. Separa la lógica que se puede probar (por ejemplo, convertir 0–100 a ganancia, o qué sonido corresponde a cada evento) de la que necesita el navegador.
+1. `sistemas/audio.js` con un `AudioContext` y dos `GainNode` (música y efectos) conectados al volumen de la configuración (`configuracion.valores.volMusica` y `volEfectos`, de 0 a 100; ya se guardan pero todavía no suenan). Separa la lógica que se puede probar (por ejemplo, convertir 0–100 a ganancia, o qué sonido corresponde a cada evento) de la que necesita el navegador.
 2. **El navegador solo permite sonido después de un toque:** crea o reanuda (`ctx.resume()`) el `AudioContext` en el primer toque, que puede ser el de "TOCA PARA EMPEZAR".
 3. **Efectos** con osciladores y envolventes cortas:
    - Disparo: pitido agudo muy corto, a bajo volumen porque suena cada 0,18 s.
@@ -229,7 +231,7 @@ Orden sugerido por dependencias: **8 → 9 → 10 → 11 → 12 → 13 → 14**.
 1. Claves en `guardado`: `capituloMax` (último capítulo desbloqueado, empieza en 1) y `mejorCap1` a `mejorCap5` (mejor puntaje de cada capítulo).
 2. Completar el capítulo n desbloquea el n+1 y guarda el mejor puntaje si lo superó.
 3. Selector: capítulos bloqueados con candado y atenuados (al tocarlos no pasa nada, o aparece "BLOQUEADO"); los demás muestran su mejor puntaje.
-4. "Borrar progreso" de la configuración también reinicia estas claves.
+4. "Borrar progreso" de la configuración también reinicia estas claves: agrégalas a `CLAVES_PROGRESO` en `escenas/configuracion.js` y ajusta el texto "SE BORRARÁ TU RÉCORD".
 5. Pruebas: desbloqueo, que no se desbloquee dos veces ni pase de 5, borrar progreso.
 6. Si en el celular `localStorage` resulta poco confiable, se puede cambiar `obtenerAlmacen()` por `@capacitor/preferences` (es asíncrono: habría que cargar al inicio).
 
