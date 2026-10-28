@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 237, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 262, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -39,14 +39,15 @@ www/
     render.js        canvas escalado a la pantalla (DPR hasta 3)
     util.js          clampDt, altoLogico, apuntar
     escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (Modo Libre y Modo Historia),
-                     capitulos.js (selector), configuracion.js
+                     capitulos.js (selector), dialogo.js, configuracion.js
     sistemas/        partida.js, fantasma.js, piloto.js, oleadas.js (director), generador.js,
                      colisiones.js, guardado.js, configuracion.js, vibracion.js,
                      sonido.js (notas, temas y efectos como datos), audio.js (Web Audio),
-                     progreso.js (capítulos desbloqueados y mejores puntajes)
+                     progreso.js (capítulos desbloqueados y mejores puntajes),
+                     dialogo.js (renglones y texto progresivo)
     entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
     datos/           enemigos.js (tipos Vex y asteroides), oleadas.js (formaciones y OLEADAS_PRUEBA),
-                     capitulos.js (los 5 capítulos)
+                     capitulos.js (los 5 capítulos), dialogos.js (el guion)
     graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones),
                      zonas.js (fondo de zona y velo de la nebulosa)
     entrada/         coordenadas.js (estado del dedo, toques), puntero.js (eventos del DOM)
@@ -109,12 +110,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 9 | `audio` | #10 | Efectos y música chiptune con Web Audio, volúmenes de la configuración, pausa de la música |
 | 10 | `modo-historia` | #11 | Selector y 5 capítulos jugables; asteroides, nebulosa con visión reducida y camuflaje, oleadas densas |
 | 13 | `guardado-progreso` | #12 | Solo el capítulo 1 al empezar; completar desbloquea el siguiente; mejor puntaje por capítulo; candados en el selector. Se adelantó a la 11 y la 12. |
+| 11 | `dialogos` | #13 | Diálogos con retrato antes y después de cada capítulo, texto letra por letra, SALTAR |
 
-**Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
+**Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Con `conDialogos` (así está en `main.js`), el selector y SIGUIENTE pasan antes por `irA('dialogo', { capitulo, momento: 'antes' })`, y al completar se va a `momento: 'despues'`, que vuelve con `entrar({ reanudar: true })` a la pantalla final. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adelantó) → **11 → 12 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adelantó) → ~~11~~ → **12 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
@@ -191,9 +193,7 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adela
 
 ---
 
-### Feature 11 — `feature/dialogos`
-
-> Ojo: el progreso ya existe. El diálogo `despues` debe mostrarse **antes** de "CAPÍTULO COMPLETADO", pero el desbloqueo ya ocurre en `completar()` de `escenas/juego.js`; si se mueve, cuida las pruebas de `tests/juego.test.js` sobre `resultado`.
+### ~~Feature 11 — `feature/dialogos`~~ (hecha, PR #13)
 
 **Objetivo:** cuadros de diálogo con retrato antes y después de cada capítulo.
 
@@ -215,6 +215,8 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adela
 ---
 
 ### Feature 12 — `feature/jefes`
+
+> Ojo: hoy `completar()` en `escenas/juego.js` guarda el progreso y lleva al diálogo `despues`. Con jefes, eso debe pasar al derrotar al jefe, no al vaciar la última oleada.
 
 **Objetivo:** un jefe al final de cada capítulo. El capítulo se completa al derrotarlo.
 

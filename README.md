@@ -19,10 +19,10 @@ npm run android  # sincroniza www/ con Android y abre Android Studio
 ## Estructura
 
 - `www/js/` — código del juego (módulos ES, sin bundler)
-  - `escenas/` — gestor de escenas y pantallas (`carga`, `menu`, `juego` (Modo Libre y Modo Historia), `capitulos`, `configuracion`)
+  - `escenas/` — gestor de escenas y pantallas (`carga`, `menu`, `juego` (Modo Libre y Modo Historia), `capitulos`, `dialogo`, `configuracion`)
   - `entrada/` — control táctil (coordenadas lógicas y estado del dedo)
   - `entidades/` — nave del jugador, enemigos, balas, power-ups y explosiones
-  - `datos/` — tipos de enemigos, oleadas y los cinco capítulos de la campaña
+  - `datos/` — tipos de enemigos, oleadas, los cinco capítulos de la campaña y su guion
   - `sistemas/` — partida, partida fantasma, director y generador de oleadas, colisiones, piloto automático, guardado, configuración, vibración y audio sintetizado (Web Audio)
   - `graficos/` — sprites y fuente pixel, logo, HUD y botones
   - `fondo/` — fondo de estrellas
