@@ -1,9 +1,10 @@
 import { W, view, COLORS } from '../config.js';
 import { crearBoton, dibujarBoton, dibujarVelo } from '../graficos/ui.js';
+import { CLAVES_HISTORIA } from '../sistemas/progreso.js';
 
 const DURACION_AVISO = 1.5;
 // Claves que borra "BORRAR PROGRESO". Los ajustes no son progreso: se conservan.
-const CLAVES_PROGRESO = ['recordLibre'];
+const CLAVES_PROGRESO = ['recordLibre', ...CLAVES_HISTORIA];
 const FILAS = [
   { clave: 'volMusica', etiqueta: 'MÚSICA' },
   { clave: 'volEfectos', etiqueta: 'EFECTOS' },
@@ -155,7 +156,8 @@ export function escenaConfiguracion({ estrellas, puntero, irA, fantasma, configu
         dibujarVelo(ctx, W, view.H, '¿SEGURO?', COLORS.danger);
         ctx.fillStyle = COLORS.text;
         ctx.font = 'bold 14px monospace';
-        ctx.fillText('SE BORRARÁ TU RÉCORD', W / 2, view.H * 0.4);
+        ctx.fillText('SE BORRARÁN TU RÉCORD', W / 2, view.H * 0.4);
+        ctx.fillText('Y LOS CAPÍTULOS DESBLOQUEADOS', W / 2, view.H * 0.4 + 20);
         botones.forEach((b) => dibujarBoton(ctx, b, b.id === 'SÍ' ? COLORS.danger : COLORS.accent));
       }
     },
