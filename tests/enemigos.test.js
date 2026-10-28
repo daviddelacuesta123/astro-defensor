@@ -149,3 +149,25 @@ test('los asteroides no se camuflan', () => {
   flota.update(0.01, entorno(), 640);
   assert.equal(flota.oculto(roca), false);
 });
+
+const { crearJefe } = await import('../www/js/entidades/jefes.js');
+
+test('la flota mueve a un jefe como a cualquier enemigo y nunca lo saca por abajo', () => {
+  const flota = crearFlota();
+  const jefe = crearJefe('crucero');
+  flota.agregar(jefe);
+  const ent = { ...entorno(), invocar() {} };
+  for (let i = 0; i < 2000; i++) flota.update(0.01, ent, 640);
+  assert.deepEqual(flota.lista, [jefe]);
+  assert.equal(jefe.entrando, false);
+});
+
+test('un jefe camuflado se oculta aunque la zona no tenga camuflaje, salvo al recibir un disparo', () => {
+  const flota = crearFlota();
+  const jefe = crearJefe('acechador');
+  flota.agregar(jefe);
+  jefe.camuflado = true;
+  assert.equal(flota.oculto(jefe), true);
+  jefe.golpeado = 0.08;
+  assert.equal(flota.oculto(jefe), false);
+});

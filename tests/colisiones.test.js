@@ -73,3 +73,26 @@ test('un enemigo que choca con la nave se destruye', () => {
   assert.equal(golpearJugador(j, crearBalas(), flota), true);
   assert.equal(flota.lista.length, 0);
 });
+
+const { crearJefe } = await import('../www/js/entidades/jefes.js');
+
+test('chocar con un jefe golpea a la nave pero el jefe sigue en la flota', () => {
+  const jugador = crearJugador({ x: 180, y: 300 });
+  const jefe = crearJefe('acorazado');
+  jefe.x = 180;
+  jefe.y = 300;
+  const flota = flotaCon(jefe);
+  assert.equal(golpearJugador(jugador, crearBalas(), flota), true);
+  assert.deepEqual(flota.lista, [jefe]);
+});
+
+test('las balas del jugador le quitan vida al jefe', () => {
+  const jefe = crearJefe('crucero');
+  jefe.x = 180;
+  jefe.y = 100;
+  const balas = crearBalas();
+  balas.disparar(180, 100);
+  impactarEnemigos(balas, flotaCon(jefe));
+  assert.equal(jefe.vida, jefe.vidaMax - 1);
+  assert.ok(jefe.golpeado > 0);
+});
