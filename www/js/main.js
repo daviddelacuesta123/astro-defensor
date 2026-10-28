@@ -6,6 +6,8 @@ import { escenaCarga } from './escenas/carga.js';
 import { escenaMenu } from './escenas/menu.js';
 import { escenaJuego } from './escenas/juego.js';
 import { escenaConfiguracion } from './escenas/configuracion.js';
+import { escenaCapitulos } from './escenas/capitulos.js';
+import { CAPITULOS } from './datos/capitulos.js';
 import { crearFantasma } from './sistemas/fantasma.js';
 import { OLEADAS_PRUEBA } from './datos/oleadas.js';
 import { generarOleada } from './sistemas/generador.js';
@@ -37,11 +39,13 @@ const sonar = (nombre) => audio.efecto(nombre);
 canvas.addEventListener('pointerdown', () => audio.activar());
 
 // Tema musical de cada pantalla; el mismo tema sigue sin cortarse al cambiar entre ellas.
-const TEMA_ESCENA = { carga: 'menu', menu: 'menu', configuracion: 'menu', juego: 'juego' };
+const TEMA_ESCENA = {
+  carga: 'menu', menu: 'menu', configuracion: 'menu', capitulos: 'menu', juego: 'juego', historia: 'juego',
+};
 const estrellas = crearEstrellas({ alto: view.H });
 const escenas = crearGestorEscenas();
-const irA = (nombre) => {
-  escenas.ir(nombre);
+const irA = (nombre, params) => {
+  escenas.ir(nombre, params);
   audio.musica(TEMA_ESCENA[nombre] ?? null);
 };
 const fantasma = crearFantasma({ oleadas: OLEADAS_PRUEBA });
@@ -51,6 +55,12 @@ const juego = escenaJuego({
   estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, oleadas: (n) => generarOleada(n),
 });
 escenas.registrar('juego', juego);
+// El Modo Historia es la misma escena de juego, con los capítulos en lugar de oleadas infinitas.
+const historia = escenaJuego({ estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS });
+escenas.registrar('historia', historia);
+// Escenas con partida: en pausa, la música calla.
+const partidas = { juego, historia };
+escenas.registrar('capitulos', escenaCapitulos({ estrellas, puntero, irA, fantasma, capitulos: CAPITULOS, sonar }));
 escenas.registrar('configuracion', escenaConfiguracion({
   estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar, sonar,
 }));
@@ -67,7 +77,7 @@ function loop(now) {
   const dt = clampDt(now - last);
   last = now;
   escenas.update(dt);
-  audio.pausarMusica(escenas.actual === 'juego' && juego.estado === 'pausa');
+  audio.pausarMusica(partidas[escenas.actual]?.estado === 'pausa');
   audio.actualizar();
   beginFrame();
   escenas.draw(ctx);

@@ -47,12 +47,11 @@ test('MODO LIBRE lleva al juego', () => {
   assert.deepEqual(destinos, ['juego']);
 });
 
-test('MODO HISTORIA avisa que llega pronto', () => {
+test('MODO HISTORIA lleva al selector de capítulos', () => {
   const { escena, destinos, tocarBoton } = preparar();
   escena.entrar();
   tocarBoton('MODO HISTORIA');
-  assert.equal(escena.aviso.texto, 'PRÓXIMAMENTE');
-  assert.deepEqual(destinos, []);
+  assert.deepEqual(destinos, ['capitulos']);
 });
 
 test('CONFIGURACIÓN lleva a la pantalla de ajustes', () => {
@@ -60,18 +59,6 @@ test('CONFIGURACIÓN lleva a la pantalla de ajustes', () => {
   escena.entrar();
   tocarBoton('CONFIGURACIÓN');
   assert.deepEqual(destinos, ['configuracion']);
-});
-
-test('el aviso dura 1.5 s y cada toque lo reinicia', () => {
-  const { escena, tocarBoton } = preparar();
-  escena.entrar();
-  tocarBoton('MODO HISTORIA');
-  for (let i = 0; i < 100; i++) escena.update(0.01);
-  tocarBoton('MODO HISTORIA');
-  for (let i = 0; i < 140; i++) escena.update(0.01);
-  assert.ok(escena.aviso, 'el segundo toque reinició el aviso');
-  for (let i = 0; i < 20; i++) escena.update(0.01);
-  assert.equal(escena.aviso, null);
 });
 
 test('un toque anterior a entrar al menú no activa ningún botón', () => {
@@ -93,12 +80,11 @@ test('el menú muestra el récord guardado del Modo Libre', () => {
   assert.equal(escena.record, 1234);
 });
 
-test('tocar un botón suena, aunque todavía no lleve a ningún lado', () => {
+test('tocar un botón suena', () => {
   const { escena, sonidos, tocarBoton } = preparar();
   escena.entrar();
-  tocarBoton('MODO HISTORIA');
   tocarBoton('MODO LIBRE');
-  assert.deepEqual(sonidos, ['boton', 'boton']);
+  assert.deepEqual(sonidos, ['boton']);
 });
 
 test('tocar fuera de los botones no suena', () => {

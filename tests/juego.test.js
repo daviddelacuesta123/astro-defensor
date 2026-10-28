@@ -141,3 +141,113 @@ test('la partida del juego suena', () => {
   escena.partida.update(0.01, { activo: false });
   assert.ok(sonidos.includes('golpe'));
 });
+
+// Modo Historia: la misma escena con la opción `capitulos`.
+const { CAPITULOS } = await import('../www/js/datos/capitulos.js');
+
+function prepararHistoria(capitulo, guardado = guardadoFalso()) {
+  const destinos = [];
+  const puntero = crearEstadoPuntero();
+  const escena = escenaJuego({
+    estrellas: { update() {}, draw() {} },
+    puntero,
+    irA: (nombre) => destinos.push(nombre),
+    guardado,
+    capitulos: CAPITULOS,
+  });
+  escena.entrar({ capitulo });
+  const textos = () => escena.botones().map((b) => b.texto);
+  const tocarBoton = (texto) => {
+    const b = escena.botones().find((x) => x.texto === texto);
+    assert.ok(b, `no hay botón ${texto}; hay: ${textos()}`);
+    puntero.bajar(1, b.x, b.y);
+    puntero.subir(1);
+    escena.update(0.01);
+  };
+  const completar = () => {
+    escena.partida.estado = 'completada';
+    escena.update(0.01);
+  };
+  return { escena, destinos, textos, tocarBoton, completar };
+}
+
+test('historia: entra al capítulo pedido y anuncia su título', () => {
+  const { escena } = prepararHistoria(2);
+  assert.equal(escena.capitulo.numero, 2);
+  assert.equal(escena.estado, 'jugando');
+  assert.equal(escena.avisoOleada.n, 1);
+});
+
+test('historia: al completar se ofrece seguir con el siguiente capítulo', () => {
+  const { escena, textos, tocarBoton, completar } = prepararHistoria(2);
+  const vieja = escena.partida;
+  completar();
+  assert.equal(escena.estado, 'completado');
+  assert.deepEqual(textos(), ['SIGUIENTE', 'MENÚ']);
+  tocarBoton('SIGUIENTE');
+  assert.deepEqual([escena.estado, escena.capitulo.numero], ['jugando', 3]);
+  assert.notEqual(escena.partida, vieja);
+});
+
+test('historia: el último capítulo solo ofrece volver al menú', () => {
+  const { textos, tocarBoton, destinos, completar } = prepararHistoria(5);
+  completar();
+  assert.deepEqual(textos(), ['MENÚ']);
+  tocarBoton('MENÚ');
+  assert.deepEqual(destinos, ['menu']);
+});
+
+test('historia: reintentar repite el mismo capítulo', () => {
+  const { escena, tocarBoton } = prepararHistoria(4);
+  escena.partida.estado = 'terminada';
+  escena.update(0.01);
+  assert.equal(escena.estado, 'fin');
+  tocarBoton('REINTENTAR');
+  assert.deepEqual([escena.estado, escena.capitulo.numero], ['jugando', 4]);
+  tocarBoton('PAUSA');
+  tocarBoton('REINICIAR');
+  assert.equal(escena.capitulo.numero, 4);
+});
+
+test('historia: no toca el récord del Modo Libre', () => {
+  const guardado = guardadoFalso({ recordLibre: 100 });
+  const { escena } = prepararHistoria(1, guardado);
+  perderCon(escena, 5000);
+  assert.equal(escena.nuevoRecord, false);
+  assert.equal(guardado.leerNumero('recordLibre'), 100);
+});
+
+test('historia: el capítulo 3 camufla a los enemigos; el 1 no', () => {
+  const ocultos = (capitulo) => {
+    const { escena } = prepararHistoria(capitulo);
+    let n = 0;
+    for (let i = 0; i < 400; i++) {
+      escena.update(0.01);
+      n += escena.partida.flota.lista.filter((e) => escena.partida.flota.oculto(e)).length;
+    }
+    return n;
+  };
+  assert.ok(ocultos(3) > 0);
+  assert.equal(ocultos(1), 0);
+});
+
+test('historia: el capítulo 1 se juega de principio a fin sin anunciar oleadas de más', () => {
+  const { escena } = prepararHistoria(1);
+  const total = CAPITULOS[0].oleadas.length;
+  let maxAnunciada = 0;
+  // Cada enemigo que aparece se elimina al instante: solo se prueba el avance del capítulo.
+  for (let i = 0; i < 6000 && escena.estado === 'jugando'; i++) {
+    escena.partida.flota.lista.length = 0;
+    escena.update(0.02);
+    if (escena.avisoOleada) maxAnunciada = Math.max(maxAnunciada, escena.avisoOleada.n);
+  }
+  assert.equal(escena.estado, 'completado');
+  assert.equal(maxAnunciada, total);
+});
+
+test('modo libre: entrar sin parámetros sigue funcionando', () => {
+  const { escena } = preparar();
+  assert.equal(escena.capitulo, null);
+  escena.entrar(undefined);
+  assert.equal(escena.estado, 'jugando');
+});

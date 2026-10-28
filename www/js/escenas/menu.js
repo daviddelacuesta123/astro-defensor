@@ -3,10 +3,9 @@ import { dibujarLogo, FIN_LOGO } from '../graficos/logo.js';
 import { crearBoton, dibujarBoton } from '../graficos/ui.js';
 import { dibujarVeloFondo } from './carga.js';
 
-const DURACION_AVISO = 1.5;
-// Destino de cada botón; null = todavía no existe (muestra "PRÓXIMAMENTE").
+// Escena a la que lleva cada botón.
 const OPCIONES = [
-  { texto: 'MODO HISTORIA', destino: null },
+  { texto: 'MODO HISTORIA', destino: 'capitulos' },
   { texto: 'MODO LIBRE', destino: 'juego' },
   { texto: 'CONFIGURACIÓN', destino: 'configuracion' },
 ];
@@ -16,7 +15,6 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar 
   let t = 0;
 
   return {
-    aviso: null,
     // Récord del Modo Libre (se relee al volver al menú tras una partida).
     record: 0,
 
@@ -29,7 +27,6 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar 
 
     entrar() {
       t = 0;
-      this.aviso = null;
       this.record = guardado.leerNumero('recordLibre');
       // El toque que trajo hasta aquí no debe activar un botón.
       puntero.tomarToques();
@@ -42,18 +39,10 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar 
         const i = botones.findIndex((b) => b.contiene(x, y));
         if (i < 0) continue;
         sonar('boton');
-        const { destino } = OPCIONES[i];
-        if (destino) {
-          irA(destino);
-          return;
-        }
-        this.aviso = { texto: 'PRÓXIMAMENTE', restante: DURACION_AVISO };
+        irA(OPCIONES[i].destino);
+        return;
       }
 
-      if (this.aviso) {
-        this.aviso.restante -= dt;
-        if (this.aviso.restante <= 0) this.aviso = null;
-      }
       estrellas.update(dt, view.H);
       fantasma.update(dt, view.H);
     },
@@ -67,21 +56,11 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar 
       dibujarLogo(ctx, W / 2, view.H * 0.12, FIN_LOGO + 1 + t);
 
       const botones = this.botones();
-      botones.forEach((b, i) => dibujarBoton(ctx, b, OPCIONES[i].destino ? COLORS.accent : COLORS.dim));
-
-      if (this.aviso) {
-        ctx.globalAlpha = Math.min(1, this.aviso.restante / 0.3);
-        ctx.fillStyle = COLORS.warn;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = 'bold 14px monospace';
-        ctx.fillText(this.aviso.texto, W / 2, botones[botones.length - 1].y + 52);
-        ctx.globalAlpha = 1;
-      }
+      for (const b of botones) dibujarBoton(ctx, b);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      if (this.record > 0 && !this.aviso) {
+      if (this.record > 0) {
         ctx.fillStyle = COLORS.text;
         ctx.font = 'bold 13px monospace';
         ctx.fillText(`RÉCORD  ${this.record}`, W / 2, botones[botones.length - 1].y + 52);
