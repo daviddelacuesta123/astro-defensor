@@ -11,7 +11,7 @@ function guardadoFalso(datos = {}) {
   return crearGuardado({ getItem: (k) => (mapa.has(k) ? mapa.get(k) : null), setItem: (k, v) => mapa.set(k, String(v)) });
 }
 
-function preparar(guardado = guardadoFalso()) {
+function preparar(guardado = guardadoFalso(), extra = {}) {
   const destinos = [];
   const puntero = crearEstadoPuntero();
   const escena = escenaJuego({
@@ -20,6 +20,7 @@ function preparar(guardado = guardadoFalso()) {
     irA: (nombre) => destinos.push(nombre),
     guardado,
     oleadas: OLEADAS_PRUEBA,
+    ...extra,
   });
   escena.entrar();
   const textos = () => escena.botones().map((b) => b.texto);
@@ -100,4 +101,26 @@ test('reintentar después de un récord no arrastra el aviso', () => {
 test('al empezar se anuncia la oleada 1', () => {
   const { escena } = preparar();
   assert.equal(escena.avisoOleada.n, 1);
+});
+
+test('la partida usa la sensibilidad de la configuración al empezar', () => {
+  // Cuánto avanza la nave hacia el dedo en un instante, con la sensibilidad dada.
+  const avance = (sensibilidad) => {
+    const configuracion = { valores: { sensibilidad } };
+    const { escena } = preparar(guardadoFalso(), { configuracion });
+    const { jugador } = escena.partida;
+    const inicio = jugador.x;
+    escena.partida.update(0.05, { activo: true, x: 40, y: 400 });
+    return inicio - jugador.x;
+  };
+  assert.ok(avance(2) > avance(0.5));
+});
+
+test('perder una vida en el juego llama a vibrar', () => {
+  const vibraciones = [];
+  const { escena } = preparar(guardadoFalso(), { vibrar: (ms) => vibraciones.push(ms) });
+  const { jugador, balasEnemigas } = escena.partida;
+  balasEnemigas.disparar(jugador.x, jugador.y, 0);
+  escena.partida.update(0.01, { activo: false });
+  assert.equal(vibraciones.length, 1);
 });
