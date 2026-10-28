@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 262, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 287, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -45,9 +45,9 @@ www/
                      sonido.js (notas, temas y efectos como datos), audio.js (Web Audio),
                      progreso.js (capítulos desbloqueados y mejores puntajes),
                      dialogo.js (renglones y texto progresivo)
-    entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
+    entidades/       jugador.js, enemigos.js, jefes.js, balas.js, powerups.js, explosiones.js
     datos/           enemigos.js (tipos Vex y asteroides), oleadas.js (formaciones y OLEADAS_PRUEBA),
-                     capitulos.js (los 5 capítulos), dialogos.js (el guion)
+                     capitulos.js (los 5 capítulos), dialogos.js (el guion), jefes.js (los 5 jefes)
     graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones),
                      zonas.js (fondo de zona y velo de la nebulosa)
     entrada/         coordenadas.js (estado del dedo, toques), puntero.js (eventos del DOM)
@@ -111,12 +111,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 10 | `modo-historia` | #11 | Selector y 5 capítulos jugables; asteroides, nebulosa con visión reducida y camuflaje, oleadas densas |
 | 13 | `guardado-progreso` | #12 | Solo el capítulo 1 al empezar; completar desbloquea el siguiente; mejor puntaje por capítulo; candados en el selector. Se adelantó a la 11 y la 12. |
 | 11 | `dialogos` | #13 | Diálogos con retrato antes y después de cada capítulo, texto letra por letra, SALTAR |
+| 12 | `jefes` | #14 | Un jefe por capítulo con alerta, barra de vida y fases; la Reina tiene 3 fases |
 
 **Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Con `conDialogos` (así está en `main.js`), el selector y SIGUIENTE pasan antes por `irA('dialogo', { capitulo, momento: 'antes' })`, y al completar se va a `momento: 'despues'`, que vuelve con `entrar({ reanudar: true })` a la pantalla final. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adelantó) → ~~11~~ → **12 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adelantó) → ~~11~~ → ~~12~~ → **14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
@@ -214,9 +215,9 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adela
 
 ---
 
-### Feature 12 — `feature/jefes`
+### ~~Feature 12 — `feature/jefes`~~ (hecha, PR #14)
 
-> Ojo: hoy `completar()` en `escenas/juego.js` guarda el progreso y lleva al diálogo `despues`. Con jefes, eso debe pasar al derrotar al jefe, no al vaciar la última oleada.
+> Cómo quedó: cada capítulo tiene `jefe` en `datos/capitulos.js`. El jefe es un objeto con la misma forma que un enemigo y vive en la flota (`jefe: true`); la partida lo hace aparecer cuando `director.terminado`, y el capítulo se completa 2 s después de derrotarlo. La bomba le quita 12 de vida en lugar de borrarlo.
 
 **Objetivo:** un jefe al final de cada capítulo. El capítulo se completa al derrotarlo.
 
@@ -273,5 +274,6 @@ Orden sugerido por dependencias: ~~8~~ → ~~9~~ → ~~10~~ → ~~13~~ (se adela
 - **`OLEADAS_PRUEBA`** sigue en uso para la partida fantasma de la carga y el menú.
 - **`escenas/juego.js` sirve a los dos modos:** registrado como `'juego'` (Modo Libre) y como `'historia'` (con `capitulos`). Las pruebas de ambos están en `tests/juego.test.js`.
 - **Balance de los capítulos:** las oleadas de `datos/capitulos.js` están diseñadas a mano pero sin probar en un celular; el capítulo 3 (visión reducida) y el 4 (oleadas densas) pueden necesitar ajuste.
+- **Balance de los jefes:** vida, cadencias y daño de la bomba están en `datos/jefes.js`, `entidades/jefes.js` y `sistemas/partida.js` (`DANO_BOMBA_JEFE`). Ojo con **El Acechador**: su camuflaje más el velo de la nebulosa pueden hacerlo casi invisible; si molesta, que no se camufle o que el velo sea más suave mientras hay jefe.
 - **Todavía no se ha probado en un Android real.** La primera prueba en dispositivo puede mostrar problemas de tamaño o rendimiento.
 - Para probar en el navegador sin mouse táctil: en DevTools, modo dispositivo, el arrastre del mouse simula el dedo.
