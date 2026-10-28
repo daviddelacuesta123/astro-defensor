@@ -21,7 +21,7 @@ Requisitos: Node.js 20 o superior. Para Android, también Android Studio con el 
 ```bash
 npm install      # instala Capacitor
 npm run serve    # abre el juego en http://localhost:8080
-npm test         # corre las pruebas automáticas (hoy: 154, todas pasan)
+npm test         # corre las pruebas automáticas (hoy: 188, todas pasan)
 npm run android  # copia www/ al proyecto Android y abre Android Studio
 ```
 
@@ -40,7 +40,8 @@ www/
     util.js          clampDt, altoLogico, apuntar
     escenas/         pantallas: gestor.js, carga.js, menu.js, juego.js (= Modo Libre), configuracion.js
     sistemas/        partida.js, fantasma.js, piloto.js, oleadas.js (director), generador.js,
-                     colisiones.js, guardado.js, configuracion.js, vibracion.js
+                     colisiones.js, guardado.js, configuracion.js, vibracion.js,
+                     sonido.js (notas, temas y efectos como datos), audio.js (Web Audio)
     entidades/       jugador.js, enemigos.js, balas.js, powerups.js, explosiones.js
     datos/           enemigos.js (tipos Vex), oleadas.js (formaciones y OLEADAS_PRUEBA)
     graficos/        sprites.js (pixel art en texto), fuente.js (fuente pixel), logo.js, hud.js, ui.js (botones)
@@ -64,6 +65,7 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | **Enemigos** (`datos/enemigos.js`) | Tipos Vex | `explorador`, `zigzag`, `tirador`. Para agregar un tipo: datos aquí más un sprite en `graficos/sprites.js` (`SPRITES_ENEMIGO`). Hay una prueba que verifica que el tamaño del sprite coincide con `ancho`/`alto`. |
 | **Guardado** (`sistemas/guardado.js`) | Persistencia en el teléfono | `crearGuardado(obtenerAlmacen())` devuelve `{ leerNumero(clave, defecto), escribir(clave, valor), borrar(clave) }`. Prefijo `astro.`; nunca lanza errores aunque `localStorage` falle. Claves en uso: `recordLibre`, `volMusica`, `volEfectos`, `vibracion`, `sensibilidad`. |
 | **Configuración** (`sistemas/configuracion.js`) | Ajustes del jugador | `crearConfiguracion(guardado)` devuelve `{ valores, cambiar(clave, valor), subir(clave), bajar(clave) }`; acota y guarda al cambiar. En `main.js` hay una sola instancia, `configuracion`, y `vibrar(ms)` (`sistemas/vibracion.js`), que solo vibra si el ajuste está activo. |
+| **Audio** (`sistemas/audio.js`, `sistemas/sonido.js`) | Efectos y música | En `main.js`, `sonar(nombre)` toca un efecto de `EFECTOS` (`disparo`, `explosion`, `golpe`, `powerup`, `bomba`, `boton`) y `audio.musica(tema)` cambia el tema de `TEMAS`. El tema de cada pantalla está en `TEMA_ESCENA` (`main.js`). Para un sonido nuevo: agregar sus capas en `EFECTOS`; para un tema nuevo, sus voces en `TEMAS` (una nota por corchea, `-` = sostener o silencio). Las escenas y la partida reciben `sonar` como parámetro opcional. |
 | **Sprites** (`graficos/sprites.js`) | Pixel art | Arreglos de texto con una letra por color (`.` = transparente), `paleta` y `escala`. `dibujarSprite(ctx, sprite, x, y, colorUnico?)`. |
 
 ### Convenciones
@@ -99,12 +101,13 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 6 | `menu-principal` | #6 | Menú y navegación carga → menú → juego → menú; servidor de desarrollo |
 | 7 | `modo-libre` | #7 | Oleadas infinitas con dificultad creciente, aviso de oleada, récord guardado |
 | 8 | `configuracion` | #9 | Ajustes guardados (volúmenes, vibración, sensibilidad), borrar progreso con confirmación |
+| 9 | `audio` | #10 | Efectos y música chiptune con Web Audio, volúmenes de la configuración, pausa de la música |
 
 En el menú, **Modo Historia** muestra "PRÓXIMAMENTE". Para activarlo, en `escenas/menu.js` cambia el `destino: null` de su opción en `OPCIONES` por el nombre de la escena.
 
 ## 6. Features pendientes, en orden
 
-Orden sugerido por dependencias: ~~8~~ → **9 → 10 → 11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
+Orden sugerido por dependencias: ~~8~~ → ~~9~~ → **10 → 11 → 12 → 13 → 14**. El audio usa los volúmenes de configuración; diálogos y jefes se montan sobre el Modo Historia; el guardado de progreso necesita los capítulos.
 
 ---
 
@@ -133,7 +136,7 @@ Orden sugerido por dependencias: ~~8~~ → **9 → 10 → 11 → 12 → 13 → 1
 
 ---
 
-### Feature 9 — `feature/audio`
+### ~~Feature 9 — `feature/audio`~~ (hecha, PR #10)
 
 **Objetivo:** efectos y música sintetizados con **Web Audio API**, sin archivos, respetando la configuración.
 
@@ -173,7 +176,7 @@ Orden sugerido por dependencias: ~~8~~ → **9 → 10 → 11 → 12 → 13 → 1
 1. `datos/capitulos.js`: por capítulo, `{ numero, nombre, zona, colorFondo, oleadas: [...] }` con una **lista fija** de oleadas (entre 5 y 8), diseñadas a mano con `linea`, `fila` y `ve`, de dificultad creciente entre capítulos. Prueba: todas ordenadas por `t`, con tipos válidos y 5 capítulos.
 2. **El capítulo termina** al vaciar la última oleada (sin repetirla), no en ciclos como hoy. El director repite las listas: agrega una opción, por ejemplo `crearDirector(oleadas, { repetir: false })`, que exponga `terminado`. Ojo: `partida.js` y `fantasma.js` usan el comportamiento actual.
 3. `escenas/capitulos.js` (selector): 5 tarjetas o botones con número y nombre. Por ahora todos desbloqueados; la feature 13 los bloquea.
-4. `escenas/historia.js`: como `escenas/juego.js` (pausa, HUD, fin), pero con las oleadas del capítulo, sin récord, y al terminar muestra **"CAPÍTULO COMPLETADO"** con Siguiente y Menú. Si muere: Reintentar y Menú. Conviene reutilizar `juego.js` con opciones en lugar de copiarlo.
+4. `escenas/historia.js`: como `escenas/juego.js` (pausa, HUD, fin), pero con las oleadas del capítulo, sin récord, y al terminar muestra **"CAPÍTULO COMPLETADO"** con Siguiente y Menú. Si muere: Reintentar y Menú. Conviene reutilizar `juego.js` con opciones en lugar de copiarlo. Pásale `sonar`, agrega sus escenas a `TEMA_ESCENA` en `main.js` y, si tiene pausa, inclúyela en la línea de `audio.pausarMusica(...)` del loop.
 5. **Novedades de zona:** asteroide como nuevo tipo en `datos/enemigos.js` (por ejemplo `vida: 99`, `puntos: 0`, gris, en distintos tamaños); visibilidad y camuflaje como efectos de dibujo en la escena o en la flota (camuflaje = alfa bajo cuando `golpeado` es 0 y un temporizador lo indica).
 6. Activar Modo Historia en el menú.
 

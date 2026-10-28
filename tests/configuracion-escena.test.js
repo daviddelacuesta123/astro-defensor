@@ -18,6 +18,7 @@ function guardadoFalso(datos = {}) {
 function preparar(guardado = guardadoFalso()) {
   const destinos = [];
   const vibraciones = [];
+  const sonidos = [];
   const puntero = crearEstadoPuntero();
   const configuracion = crearConfiguracion(guardado);
   const escena = escenaConfiguracion({
@@ -28,6 +29,7 @@ function preparar(guardado = guardadoFalso()) {
     configuracion,
     guardado,
     vibrar: (ms) => vibraciones.push(ms),
+    sonar: (nombre) => sonidos.push(nombre),
   });
   escena.entrar();
   const ids = () => escena.botones().map((b) => b.id);
@@ -39,7 +41,7 @@ function preparar(guardado = guardadoFalso()) {
     puntero.subir(1);
     escena.update(0.01);
   };
-  return { escena, destinos, vibraciones, configuracion, guardado, ids, tocar };
+  return { escena, destinos, vibraciones, sonidos, configuracion, guardado, ids, tocar };
 }
 
 test('muestra una fila por ajuste, borrar progreso y volver', () => {
@@ -116,4 +118,12 @@ test('entrar de nuevo vuelve a los ajustes aunque se haya salido confirmando', (
   tocar('BORRAR PROGRESO');
   escena.entrar();
   assert.equal(escena.estado, 'ajustes');
+});
+
+test('cada botón suena al tocarlo', () => {
+  const { tocar, sonidos } = preparar();
+  tocar('volEfectos+');
+  tocar('BORRAR PROGRESO');
+  tocar('NO');
+  assert.deepEqual(sonidos, ['boton', 'boton', 'boton']);
 });
