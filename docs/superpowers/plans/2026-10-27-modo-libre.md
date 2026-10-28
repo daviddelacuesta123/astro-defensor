@@ -30,7 +30,7 @@
 
 **Files:** Create `www/js/sistemas/guardado.js`; Test `tests/guardado.test.js`
 
-**Interfaces:** `crearGuardado(almacen = globalThis.localStorage) -> { leerNumero(clave, defecto = 0), escribir(clave, valor) }`. Claves con prefijo `astro.`. `leerNumero` devuelve `defecto` si no hay valor, si no es un número finito ≥ 0 o si el almacén lanza error; `escribir` ignora errores.
+**Interfaces:** `obtenerAlmacen()` (localStorage o `undefined` si acceder lanza error) y `crearGuardado(almacen) -> { leerNumero(clave, defecto = 0), escribir(clave, valor) }`. Claves con prefijo `astro.`. `leerNumero` devuelve `defecto` si no hay valor, si no es un número finito ≥ 0 o si el almacén lanza error; `escribir` ignora errores.
 
 - [ ] Tests (lee lo escrito, prefijo, defecto, corrupto, almacén que lanza, sin almacén) → fallar → implementar → pasar. Commit `feat: guardado local tolerante a fallos`.
 
