@@ -56,17 +56,32 @@ export function crearEnemigo(tipo, x, y, { velocidad = 1 } = {}) {
   };
 }
 
-export function crearFlota() {
+// Opacidad de un enemigo camuflado: casi invisible, pero no del todo.
+const ALFA_CAMUFLADO = 0.12;
+
+// `camuflaje` = { ciclo, oculto }: cada nave Vex pasa `oculto` segundos de cada `ciclo` casi invisible
+// (capítulo 3). Cada una empieza el ciclo en un momento al azar para que no desaparezcan todas juntas.
+export function crearFlota({ camuflaje = null, rng = Math.random } = {}) {
   const lista = [];
+  const desfases = new WeakMap();
+  let tiempo = 0;
 
   return {
     lista,
 
     agregar(enemigo) {
+      if (camuflaje) desfases.set(enemigo, rng() * camuflaje.ciclo);
       lista.push(enemigo);
     },
 
+    // Mientras destella por un disparo se ve: así el jugador sabe que le está dando.
+    oculto(enemigo) {
+      if (!camuflaje || TIPOS_ENEMIGO[enemigo.tipo].obstaculo || enemigo.golpeado > 0) return false;
+      return (tiempo + desfases.get(enemigo)) % camuflaje.ciclo < camuflaje.oculto;
+    },
+
     update(dt, entorno, alto) {
+      tiempo += dt;
       for (const e of lista) e.update(dt, entorno);
       for (let i = lista.length - 1; i >= 0; i--) {
         if (lista[i].y > alto + 30) lista.splice(i, 1);
@@ -75,7 +90,9 @@ export function crearFlota() {
 
     draw(ctx) {
       for (const e of lista) {
+        if (this.oculto(e)) ctx.globalAlpha = ALFA_CAMUFLADO;
         dibujarSprite(ctx, SPRITES_ENEMIGO[e.tipo], e.x, e.y, e.golpeado > 0 ? COLORS.text : undefined);
+        ctx.globalAlpha = 1;
       }
     },
   };
