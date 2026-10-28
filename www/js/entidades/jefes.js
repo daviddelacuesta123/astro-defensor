@@ -79,7 +79,8 @@ const PATRONES = {
   // Tres fases, cada una más rápida y agresiva; invoca exploradores para que la protejan.
   reina(j, entorno, h) {
     const f = j.fase;
-    j.x = W / 2 + Math.sin(h.t * (0.5 + 0.25 * f)) * (80 + 20 * f);
+    // El recorrido crece con la fase, sin que el sprite (90 de ancho) se salga de la pantalla.
+    j.x = W / 2 + Math.sin(h.t * (0.5 + 0.25 * f)) * (80 + 15 * f);
     const boca = j.y + j.alto / 2;
     if (f < 3) {
       if (h.cada('abanico', f === 1 ? 2 : 1.4)) abanico(entorno, j.x, boca, 5, 0.9, 160);

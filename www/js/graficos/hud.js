@@ -1,4 +1,4 @@
-import { COLORS } from '../config.js';
+import { W, COLORS } from '../config.js';
 import { NAVE_AD7, dibujarSprite } from './sprites.js';
 
 const MINI_NAVE = { ...NAVE_AD7, escala: 1 };
@@ -25,4 +25,26 @@ export function dibujarHUD(ctx, { puntos, vidas }, botonPausa) {
   ctx.fillStyle = COLORS.text;
   ctx.fillRect(Math.round(botonPausa.x) - 6, y0 + 9, 4, botonPausa.alto - 18);
   ctx.fillRect(Math.round(botonPausa.x) + 2, y0 + 9, 4, botonPausa.alto - 18);
+}
+
+// Barra de vida del jefe bajo el HUD, con su nombre y una marca donde cambia de fase.
+export function dibujarBarraJefe(ctx, jefe) {
+  const x0 = 12;
+  const ancho = W - 24;
+  const y = 56;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillStyle = COLORS.danger;
+  ctx.fillText(jefe.nombre, x0, y);
+
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(x0, y + 8, ancho, 8);
+  ctx.fillStyle = COLORS.danger;
+  ctx.fillRect(x0 + 1, y + 9, (ancho - 2) * Math.max(0, jefe.vida) / jefe.vidaMax, 6);
+  ctx.strokeStyle = COLORS.dim;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x0 + 0.5, y + 8.5, ancho - 1, 7);
+  ctx.fillStyle = COLORS.text;
+  for (const f of jefe.fases) ctx.fillRect(Math.round(x0 + ancho * f), y + 6, 1, 12);
 }
