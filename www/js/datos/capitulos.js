@@ -8,12 +8,14 @@ const oleada = (vel, ...formaciones) => formaciones.flat()
 // Asteroides que caen uno tras otro en las columnas `xs`.
 const rocas = (tipo, xs, t0, intervalo) => xs.map((x, i) => ({ t: t0 + i * intervalo, tipo, x }));
 
-// Campaña "La Última Señal". Cada capítulo es más rápido y trae más naves que el anterior.
+// Campaña "La Última Señal". Cada capítulo es más rápido y trae más naves que el anterior,
+// y termina con su jefe (`datos/jefes.js`).
 // efectos: novedades de la zona. `camuflaje` = { ciclo, oculto } (lo aplica la flota),
 // `vision` = radio del círculo visible alrededor de la nave (lo dibuja la escena).
 export const CAPITULOS = [
   {
     numero: 1,
+    jefe: 'crucero',
     nombre: 'LA ÚLTIMA DEFENSA',
     zona: 'ÓRBITA DE KEPLER',
     colorFondo: '#081430',
@@ -29,6 +31,7 @@ export const CAPITULOS = [
   },
   {
     numero: 2,
+    jefe: 'minero',
     nombre: 'PERSECUCIÓN',
     zona: 'CINTURÓN DE ASTEROIDES',
     colorFondo: '#16120e',
@@ -56,6 +59,7 @@ export const CAPITULOS = [
   },
   {
     numero: 3,
+    jefe: 'acechador',
     nombre: 'SEÑAL PERDIDA',
     zona: 'NEBULOSA CARMESÍ',
     colorFondo: '#22050f',
@@ -75,6 +79,7 @@ export const CAPITULOS = [
   },
   {
     numero: 4,
+    jefe: 'acorazado',
     nombre: 'RECUPERAR EL FARO',
     zona: 'FARO OMEGA',
     colorFondo: '#062222',
@@ -109,6 +114,7 @@ export const CAPITULOS = [
   },
   {
     numero: 5,
+    jefe: 'reina',
     nombre: 'EL CORAZÓN DEL ENJAMBRE',
     zona: 'NAVE MADRE VEX',
     colorFondo: '#160822',

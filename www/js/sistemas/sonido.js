@@ -37,6 +37,11 @@ export const EFECTOS = {
     { onda: 'ruido', inicio: 0, duracion: 0.8, volumen: 0.4 },
   ],
   boton: [{ onda: 'square', de: 900, a: 900, inicio: 0, duracion: 0.03, volumen: 0.15 }],
+  // Sirena de dos tonos cuando entra un jefe.
+  alerta: [0, 0.3, 0.6].flatMap((inicio) => [
+    { onda: 'square', de: 880, a: 880, inicio, duracion: 0.14, volumen: 0.16 },
+    { onda: 'square', de: 620, a: 620, inicio: inicio + 0.15, duracion: 0.14, volumen: 0.16 },
+  ]),
 };
 
 // Convierte un compás escrito como texto ("A4 - C5 -") en una lista de pasos.
