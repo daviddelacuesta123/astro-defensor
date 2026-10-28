@@ -5,10 +5,15 @@ const ACELERACION_CICLO = 0.85;
 
 // Director de oleadas: hace aparecer los enemigos de cada oleada en su tiempo.
 // Una oleada termina cuando ya aparecieron todos y la flota quedó vacía; tras una pausa empieza la siguiente.
+// `oleadas` puede ser una lista (se repite en ciclos cada vez más rápidos) o una función
+// `(n) => oleada` que genera la oleada n sin fin (Modo Libre).
 export function crearDirector(oleadas, { pausa = 2 } = {}) {
+  const generada = typeof oleadas === 'function';
   let tiempo = 0;
   let siguiente = 0;
   let pausaRestante = null;
+  // Se genera una sola vez al empezar cada oleada (el generador puede ser aleatorio).
+  let actual = generada ? oleadas(0) : oleadas[0];
 
   return {
     oleada: 0,
@@ -25,7 +30,6 @@ export function crearDirector(oleadas, { pausa = 2 } = {}) {
         tiempo += dt;
       }
 
-      const actual = oleadas[this.oleada];
       const escala = ACELERACION_CICLO ** this.ciclo;
       while (siguiente < actual.length && actual[siguiente].t * escala <= tiempo) {
         const { tipo, x } = actual[siguiente];
@@ -35,9 +39,14 @@ export function crearDirector(oleadas, { pausa = 2 } = {}) {
 
       if (siguiente >= actual.length && flota.lista.length === 0) {
         this.oleada++;
-        if (this.oleada >= oleadas.length) {
-          this.oleada = 0;
-          this.ciclo++;
+        if (generada) {
+          actual = oleadas(this.oleada);
+        } else {
+          if (this.oleada >= oleadas.length) {
+            this.oleada = 0;
+            this.ciclo++;
+          }
+          actual = oleadas[this.oleada];
         }
         siguiente = 0;
         pausaRestante = pausa;
