@@ -11,6 +11,9 @@ import { NAVE_AD7, dibujarSprite } from '../graficos/sprites.js';
 // Segundos entre la explosión de la nave y el final de la partida.
 const ESPERA_FIN = 1.5;
 const DURACION_DESTELLO = 0.3;
+// Milisegundos de vibración al perder una vida y al perder la última.
+const VIBRA_GOLPE = 120;
+const VIBRA_MUERTE = 400;
 const COLOR_EXPLOSION = { explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
 
 // Llama del propulsor: dos chorros bajo los motores que parpadean.
@@ -36,7 +39,8 @@ function dibujarEscudo(ctx, x, y, t) {
 
 // Simulación de una partida: nave, enemigos, balas, power-ups y explosiones.
 // La usan el juego y la partida fantasma de la pantalla de carga. No dibuja estrellas ni HUD.
-export function crearPartida({ oleadas }) {
+// `sensibilidad` y `vibrar` vienen de la configuración; la partida fantasma usa los defectos.
+export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
   const jugador = crearJugador({ x: W / 2, y: view.H - 100 });
   const balas = crearBalas();
   const balasEnemigas = crearBalas({ color: COLORS.danger, ancho: 3, largo: 6 });
@@ -68,7 +72,7 @@ export function crearPartida({ oleadas }) {
       destello = Math.max(0, destello - dt);
       // Tras perder, el mundo sigue moviéndose pero sin nave ni enemigos nuevos.
       if (partida.estado === 'jugando') {
-        jugador.update(dt, puntero, view.H, disparar);
+        jugador.update(dt, puntero, view.H, disparar, sensibilidad);
         director.update(dt, flota);
         partida.oleada = director.oleada;
       }
@@ -86,6 +90,7 @@ export function crearPartida({ oleadas }) {
       if (partida.estado === 'jugando') {
         if (golpearJugador(jugador, balasEnemigas, flota) && jugador.recibirGolpe()) {
           explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 10);
+          vibrar(jugador.vidas > 0 ? VIBRA_GOLPE : VIBRA_MUERTE);
           if (jugador.vidas <= 0) {
             partida.estado = 'muriendo';
             finEn = ESPERA_FIN;

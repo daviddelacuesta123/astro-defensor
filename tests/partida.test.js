@@ -35,3 +35,37 @@ test('perder la última vida pasa a muriendo y 1.5 s después a terminada', () =
   simular(p, 0.2);
   assert.equal(p.estado, 'terminada');
 });
+
+test('perder una vida vibra, y la última vibra más largo', () => {
+  const vibraciones = [];
+  const p = crearPartida({ oleadas: SIN_OLEADAS, vibrar: (ms) => vibraciones.push(ms) });
+  p.jugador.vidas = 2;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  p.jugador.invulnerable = 0;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  assert.equal(vibraciones.length, 2);
+  assert.ok(vibraciones[1] > vibraciones[0]);
+});
+
+test('un golpe que solo rompe el escudo no vibra', () => {
+  const vibraciones = [];
+  const p = crearPartida({ oleadas: SIN_OLEADAS, vibrar: (ms) => vibraciones.push(ms) });
+  p.jugador.escudo = true;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  assert.deepEqual(vibraciones, []);
+});
+
+test('con más sensibilidad la nave llega antes al dedo', () => {
+  const dedo = { activo: true, x: 40, y: 400 };
+  const distancia = (sensibilidad) => {
+    const p = crearPartida({ oleadas: SIN_OLEADAS, sensibilidad });
+    const inicio = p.jugador.x;
+    p.update(0.05, dedo);
+    return inicio - p.jugador.x;
+  };
+  assert.ok(distancia(2) > distancia(1));
+  assert.ok(distancia(1) > distancia(0.5));
+});

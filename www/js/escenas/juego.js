@@ -13,7 +13,8 @@ const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
 }));
 
 // Modo Libre: oleadas sin fin hasta perder; guarda el récord.
-export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas }) {
+// `configuracion` y `vibrar` son opcionales: sin ellos se juega con sensibilidad 1 y sin vibración.
+export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas, configuracion, vibrar }) {
   return {
     partida: null,
     // 'jugando' | 'pausa' | 'fin'
@@ -31,7 +32,9 @@ export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas }) {
     },
 
     entrar() {
-      this.partida = crearPartida({ oleadas });
+      // La sensibilidad se lee en cada partida nueva: así toma los cambios de la configuración.
+      const sensibilidad = configuracion?.valores.sensibilidad ?? 1;
+      this.partida = crearPartida({ oleadas, sensibilidad, vibrar });
       this.estado = 'jugando';
       this.record = guardado.leerNumero(CLAVE_RECORD);
       this.nuevoRecord = false;
