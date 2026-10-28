@@ -12,7 +12,7 @@ const OPCIONES = [
 ];
 
 // Menú principal sobre la partida fantasma.
-export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado }) {
+export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado, sonar = () => {} }) {
   let t = 0;
 
   return {
@@ -41,6 +41,7 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado }) {
       for (const { x, y } of puntero.tomarToques()) {
         const i = botones.findIndex((b) => b.contiene(x, y));
         if (i < 0) continue;
+        sonar('boton');
         const { destino } = OPCIONES[i];
         if (destino) {
           irA(destino);

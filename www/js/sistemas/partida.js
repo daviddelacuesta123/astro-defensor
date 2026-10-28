@@ -39,8 +39,9 @@ function dibujarEscudo(ctx, x, y, t) {
 
 // Simulación de una partida: nave, enemigos, balas, power-ups y explosiones.
 // La usan el juego y la partida fantasma de la pantalla de carga. No dibuja estrellas ni HUD.
-// `sensibilidad` y `vibrar` vienen de la configuración; la partida fantasma usa los defectos.
-export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
+// `sensibilidad` y `vibrar` vienen de la configuración, y `sonar(nombre)` toca un efecto.
+// La partida fantasma usa los defectos: no vibra ni suena.
+export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {}, sonar = () => {} }) {
   const jugador = crearJugador({ x: W / 2, y: view.H - 100 });
   const balas = crearBalas();
   const balasEnemigas = crearBalas({ color: COLORS.danger, ancho: 3, largo: 6 });
@@ -52,15 +53,22 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
     jugador,
     disparar: (x, y, vy, vx) => balasEnemigas.disparar(x, y, vy, vx),
   };
-  const disparar = (x, y, vx) => balas.disparar(x, y, undefined, vx);
   let destello = 0;
   let finEn = 0;
   let t = 0;
+  let ultimoDisparo = -1;
+  // Una ráfaga triple son tres balas en el mismo instante: suena una sola vez.
+  const disparar = (x, y, vx) => {
+    balas.disparar(x, y, undefined, vx);
+    if (ultimoDisparo !== t) sonar('disparo');
+    ultimoDisparo = t;
+  };
 
   const partida = {
     jugador,
     flota,
     balasEnemigas,
+    powerups,
     puntos: 0,
     // Número de oleada actual del director (desde 0).
     oleada: 0,
@@ -91,7 +99,9 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
         if (golpearJugador(jugador, balasEnemigas, flota) && jugador.recibirGolpe()) {
           explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 10);
           vibrar(jugador.vidas > 0 ? VIBRA_GOLPE : VIBRA_MUERTE);
+          sonar('golpe');
           if (jugador.vidas <= 0) {
+            sonar('explosion');
             partida.estado = 'muriendo';
             finEn = ESPERA_FIN;
             explosiones.estallar(jugador.x, jugador.y, COLORS.accent, 40);
@@ -100,6 +110,7 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
         }
         for (const tipo of powerups.recoger(jugador)) {
           if (aplicarPowerup(jugador, tipo) === 'bomba') detonarBomba();
+          else sonar('powerup');
         }
       } else if (partida.estado === 'muriendo') {
         finEn -= dt;
@@ -133,14 +144,17 @@ export function crearPartida({ oleadas, sensibilidad = 1, vibrar = () => {} }) {
     },
   };
 
-  function destruir(enemigo) {
+  function destruir(enemigo, conSonido = true) {
     partida.puntos += enemigo.puntos;
     explosiones.estallar(enemigo.x, enemigo.y, COLOR_EXPLOSION[enemigo.tipo]);
+    if (conSonido) sonar('explosion');
   }
 
   // La bomba destruye todo lo que hay en pantalla y borra las balas enemigas.
   function detonarBomba() {
-    for (const e of flota.lista) destruir(e);
+    // La bomba tiene su propio estruendo: los enemigos no suenan uno por uno.
+    for (const e of flota.lista) destruir(e, false);
+    sonar('bomba');
     flota.lista.length = 0;
     balasEnemigas.lista.length = 0;
     destello = DURACION_DESTELLO;

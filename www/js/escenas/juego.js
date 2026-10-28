@@ -13,8 +13,8 @@ const columna = (textos, desde) => textos.map((texto, i) => crearBoton({
 }));
 
 // Modo Libre: oleadas sin fin hasta perder; guarda el récord.
-// `configuracion` y `vibrar` son opcionales: sin ellos se juega con sensibilidad 1 y sin vibración.
-export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas, configuracion, vibrar }) {
+// `configuracion`, `vibrar` y `sonar` son opcionales: sin ellos se juega con sensibilidad 1, sin vibración y sin sonido.
+export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas, configuracion, vibrar, sonar = () => {} }) {
   return {
     partida: null,
     // 'jugando' | 'pausa' | 'fin'
@@ -34,7 +34,7 @@ export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas, config
     entrar() {
       // La sensibilidad se lee en cada partida nueva: así toma los cambios de la configuración.
       const sensibilidad = configuracion?.valores.sensibilidad ?? 1;
-      this.partida = crearPartida({ oleadas, sensibilidad, vibrar });
+      this.partida = crearPartida({ oleadas, sensibilidad, vibrar, sonar });
       this.estado = 'jugando';
       this.record = guardado.leerNumero(CLAVE_RECORD);
       this.nuevoRecord = false;
@@ -54,6 +54,7 @@ export function escenaJuego({ estrellas, puntero, irA, guardado, oleadas, config
         if (!boton) continue;
         // La pausa solo se puede abrir mientras la nave sigue viva.
         if (boton.texto === 'PAUSA' && this.partida.estado !== 'jugando') continue;
+        sonar('boton');
         this.accion(boton.texto);
         return;
       }

@@ -27,7 +27,7 @@ function textoValor(clave, valor) {
 }
 
 // Ajustes del jugador sobre la partida fantasma; se guardan en cuanto cambian.
-export function escenaConfiguracion({ estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar }) {
+export function escenaConfiguracion({ estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar, sonar = () => {} }) {
   return {
     // 'ajustes' | 'confirmar' (preguntando si borra el progreso)
     estado: 'ajustes',
@@ -70,6 +70,7 @@ export function escenaConfiguracion({ estrellas, puntero, irA, fantasma, configu
       for (const { x, y } of puntero.tomarToques()) {
         const tocado = botones.find((b) => b.contiene(x, y));
         if (!tocado) continue;
+        sonar('boton');
         this.accion(tocado.id);
         // Los botones cambian tras cada acción: los demás toques de este cuadro se descartan.
         break;

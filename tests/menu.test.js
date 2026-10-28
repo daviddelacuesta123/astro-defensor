@@ -14,8 +14,10 @@ function guardadoFalso(datos = {}) {
 
 function preparar(guardado = guardadoFalso()) {
   const destinos = [];
+  const sonidos = [];
   const puntero = crearEstadoPuntero();
   const escena = escenaMenu({
+    sonar: (nombre) => sonidos.push(nombre),
     estrellas: { update() {}, draw() {} },
     puntero,
     irA: (nombre) => destinos.push(nombre),
@@ -29,7 +31,7 @@ function preparar(guardado = guardadoFalso()) {
     puntero.subir(1);
     escena.update(0.01);
   };
-  return { escena, destinos, puntero, tocarBoton };
+  return { escena, destinos, puntero, tocarBoton, sonidos };
 }
 
 test('el menú tiene los tres modos en orden', () => {
@@ -89,4 +91,21 @@ test('el menú muestra el récord guardado del Modo Libre', () => {
   const { escena } = preparar(guardadoFalso({ recordLibre: 1234 }));
   escena.entrar();
   assert.equal(escena.record, 1234);
+});
+
+test('tocar un botón suena, aunque todavía no lleve a ningún lado', () => {
+  const { escena, sonidos, tocarBoton } = preparar();
+  escena.entrar();
+  tocarBoton('MODO HISTORIA');
+  tocarBoton('MODO LIBRE');
+  assert.deepEqual(sonidos, ['boton', 'boton']);
+});
+
+test('tocar fuera de los botones no suena', () => {
+  const { escena, sonidos, puntero } = preparar();
+  escena.entrar();
+  puntero.bajar(1, 5, 5);
+  puntero.subir(1);
+  escena.update(0.01);
+  assert.deepEqual(sonidos, []);
 });

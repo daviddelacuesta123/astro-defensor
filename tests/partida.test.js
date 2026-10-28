@@ -69,3 +69,56 @@ test('con más sensibilidad la nave llega antes al dedo', () => {
   assert.ok(distancia(2) > distancia(1));
   assert.ok(distancia(1) > distancia(0.5));
 });
+
+// Partida que anota los sonidos que pide.
+function conSonidos() {
+  const sonidos = [];
+  const p = crearPartida({ oleadas: SIN_OLEADAS, sonar: (nombre) => sonidos.push(nombre) });
+  return { p, sonidos };
+}
+const cuantos = (sonidos, nombre) => sonidos.filter((s) => s === nombre).length;
+
+test('el disparo suena una vez por ráfaga, aunque sea triple', () => {
+  const { p, sonidos } = conSonidos();
+  p.jugador.nivelDisparo = 3;
+  p.update(0.2, quieto);
+  assert.equal(cuantos(sonidos, 'disparo'), 1);
+  p.update(0.2, quieto);
+  assert.equal(cuantos(sonidos, 'disparo'), 2);
+});
+
+test('destruir un enemigo suena a explosión', () => {
+  const { p, sonidos } = conSonidos();
+  p.flota.agregar(crearEnemigo('explorador', p.jugador.x, 200));
+  simular(p, 1);
+  assert.equal(cuantos(sonidos, 'explosion'), 1);
+});
+
+test('perder una vida suena a golpe, y la última además explota', () => {
+  const { p, sonidos } = conSonidos();
+  p.jugador.vidas = 2;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  assert.deepEqual([cuantos(sonidos, 'golpe'), cuantos(sonidos, 'explosion')], [1, 0]);
+  p.jugador.invulnerable = 0;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  assert.deepEqual([cuantos(sonidos, 'golpe'), cuantos(sonidos, 'explosion')], [2, 1]);
+});
+
+test('recoger un power-up suena', () => {
+  const { p, sonidos } = conSonidos();
+  p.powerups.lista.push({ x: p.jugador.x, y: p.jugador.y, tipo: 'escudo', t: 0 });
+  p.update(0.01, quieto);
+  assert.equal(cuantos(sonidos, 'powerup'), 1);
+});
+
+test('la bomba suena una vez y no explota cada enemigo por separado', () => {
+  const { p, sonidos } = conSonidos();
+  for (const x of [60, 120, 240, 300]) p.flota.agregar(crearEnemigo('explorador', x, 100));
+  p.powerups.lista.push({ x: p.jugador.x, y: p.jugador.y, tipo: 'bomba', t: 0 });
+  p.update(0.01, quieto);
+  assert.equal(cuantos(sonidos, 'bomba'), 1);
+  assert.equal(cuantos(sonidos, 'explosion'), 0);
+  assert.equal(p.flota.lista.length, 0);
+});

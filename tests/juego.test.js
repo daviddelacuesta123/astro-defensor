@@ -13,8 +13,10 @@ function guardadoFalso(datos = {}) {
 
 function preparar(guardado = guardadoFalso(), extra = {}) {
   const destinos = [];
+  const sonidos = [];
   const puntero = crearEstadoPuntero();
   const escena = escenaJuego({
+    sonar: (nombre) => sonidos.push(nombre),
     estrellas: { update() {}, draw() {} },
     puntero,
     irA: (nombre) => destinos.push(nombre),
@@ -31,7 +33,7 @@ function preparar(guardado = guardadoFalso(), extra = {}) {
     puntero.subir(1);
     escena.update(0.01);
   };
-  return { escena, destinos, textos, tocarBoton };
+  return { escena, destinos, textos, tocarBoton, sonidos };
 }
 
 test('jugando, el único botón es el de pausa', () => {
@@ -123,4 +125,19 @@ test('perder una vida en el juego llama a vibrar', () => {
   balasEnemigas.disparar(jugador.x, jugador.y, 0);
   escena.partida.update(0.01, { activo: false });
   assert.equal(vibraciones.length, 1);
+});
+
+test('los botones de pausa suenan', () => {
+  const { sonidos, tocarBoton } = preparar();
+  tocarBoton('PAUSA');
+  tocarBoton('CONTINUAR');
+  assert.deepEqual(sonidos, ['boton', 'boton']);
+});
+
+test('la partida del juego suena', () => {
+  const { escena, sonidos } = preparar();
+  const { jugador, balasEnemigas } = escena.partida;
+  balasEnemigas.disparar(jugador.x, jugador.y, 0);
+  escena.partida.update(0.01, { activo: false });
+  assert.ok(sonidos.includes('golpe'));
 });
