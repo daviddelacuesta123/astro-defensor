@@ -37,6 +37,15 @@ const servidor = http.createServer((req, res) => {
   });
 });
 
+servidor.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`El puerto ${PUERTO} ya está en uso: probablemente el servidor ya está abierto en otra terminal.`);
+    console.error(`Abre http://localhost:${PUERTO} o ciérralo con Ctrl+C. Para usar otro puerto en PowerShell: $env:PUERTO=8081; npm run serve`);
+    process.exit(1);
+  }
+  throw error;
+});
+
 servidor.listen({ port: PUERTO, host: '::', ipv6Only: false }, () => {
   console.log(`Astro Defensor en http://localhost:${PUERTO}  (Ctrl+C para detener)`);
 });
