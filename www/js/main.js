@@ -8,6 +8,7 @@ import { escenaJuego } from './escenas/juego.js';
 import { escenaConfiguracion } from './escenas/configuracion.js';
 import { escenaCapitulos } from './escenas/capitulos.js';
 import { escenaDialogo } from './escenas/dialogo.js';
+import { escenaCreditos } from './escenas/creditos.js';
 import { DIALOGOS } from './datos/dialogos.js';
 import { CAPITULOS } from './datos/capitulos.js';
 import { crearFantasma } from './sistemas/fantasma.js';
@@ -44,7 +45,7 @@ canvas.addEventListener('pointerdown', () => audio.activar());
 
 // Tema musical de cada pantalla; el mismo tema sigue sin cortarse al cambiar entre ellas.
 const TEMA_ESCENA = {
-  carga: 'menu', menu: 'menu', configuracion: 'menu', capitulos: 'menu', dialogo: 'menu', juego: 'juego', historia: 'juego',
+  carga: 'menu', menu: 'menu', configuracion: 'menu', capitulos: 'menu', dialogo: 'menu', creditos: 'menu', juego: 'juego', historia: 'juego',
 };
 const estrellas = crearEstrellas({ alto: view.H });
 const escenas = crearGestorEscenas();
@@ -73,6 +74,8 @@ escenas.registrar('dialogo', escenaDialogo({ estrellas, puntero, irA, dialogos: 
 escenas.registrar('configuracion', escenaConfiguracion({
   estrellas, puntero, irA, fantasma, configuracion, guardado, vibrar, sonar,
 }));
+// Easter egg: se llega manteniendo presionada la versión en el menú.
+escenas.registrar('creditos', escenaCreditos({ estrellas, puntero, irA, sonar }));
 irA('carga');
 
 // Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa y el audio calla.
