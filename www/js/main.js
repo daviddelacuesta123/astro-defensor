@@ -23,7 +23,7 @@ const irA = (nombre) => escenas.ir(nombre);
 const fantasma = crearFantasma({ oleadas: OLEADAS_PRUEBA });
 escenas.registrar('carga', escenaCarga({ estrellas, puntero, irA, fantasma }));
 escenas.registrar('menu', escenaMenu({ estrellas, puntero, irA, fantasma }));
-escenas.registrar('juego', escenaJuego({ estrellas, puntero }));
+escenas.registrar('juego', escenaJuego({ estrellas, puntero, irA }));
 escenas.ir('carga');
 
 // Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa.
