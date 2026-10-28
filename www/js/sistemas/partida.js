@@ -58,6 +58,8 @@ export function crearPartida({ oleadas }) {
     flota,
     balasEnemigas,
     puntos: 0,
+    // Número de oleada actual del director (desde 0).
+    oleada: 0,
     // 'jugando' | 'muriendo' (la nave explotó) | 'terminada'
     estado: 'jugando',
 
@@ -68,6 +70,7 @@ export function crearPartida({ oleadas }) {
       if (partida.estado === 'jugando') {
         jugador.update(dt, puntero, view.H, disparar);
         director.update(dt, flota);
+        partida.oleada = director.oleada;
       }
       flota.update(dt, entorno, view.H);
       balas.update(dt, view.H);

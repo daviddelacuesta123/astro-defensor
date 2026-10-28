@@ -12,11 +12,13 @@ const OPCIONES = [
 ];
 
 // Menú principal sobre la partida fantasma.
-export function escenaMenu({ estrellas, puntero, irA, fantasma }) {
+export function escenaMenu({ estrellas, puntero, irA, fantasma, guardado }) {
   let t = 0;
 
   return {
     aviso: null,
+    // Récord del Modo Libre (se relee al volver al menú tras una partida).
+    record: 0,
 
     // Se calculan al usarlos porque dependen del alto de la pantalla.
     botones() {
@@ -28,6 +30,7 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma }) {
     entrar() {
       t = 0;
       this.aviso = null;
+      this.record = guardado.leerNumero('recordLibre');
       // El toque que trajo hasta aquí no debe activar un botón.
       puntero.tomarToques();
     },
@@ -75,8 +78,15 @@ export function escenaMenu({ estrellas, puntero, irA, fantasma }) {
         ctx.globalAlpha = 1;
       }
 
-      ctx.fillStyle = COLORS.dim;
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (this.record > 0 && !this.aviso) {
+        ctx.fillStyle = COLORS.text;
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText(`RÉCORD  ${this.record}`, W / 2, botones[botones.length - 1].y + 52);
+      }
+
+      ctx.fillStyle = COLORS.dim;
       ctx.font = '11px monospace';
       ctx.fillText('v1.0 · UPB', W / 2, view.H - 20);
     },

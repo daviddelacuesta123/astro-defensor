@@ -23,7 +23,7 @@ npm run android  # sincroniza www/ con Android y abre Android Studio
   - `entrada/` — control táctil (coordenadas lógicas y estado del dedo)
   - `entidades/` — nave del jugador, enemigos, balas, power-ups y explosiones
   - `datos/` — tipos de enemigos y oleadas
-  - `sistemas/` — partida, partida fantasma, director de oleadas, colisiones y piloto automático
+  - `sistemas/` — partida, partida fantasma, director y generador de oleadas, colisiones, piloto automático y guardado
   - `graficos/` — sprites y fuente pixel, logo, HUD y botones
   - `fondo/` — fondo de estrellas
 - `scripts/` — servidor de desarrollo

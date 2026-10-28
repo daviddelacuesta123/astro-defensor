@@ -4,9 +4,11 @@ import { apuntar } from '../util.js';
 import { SPRITES_ENEMIGO, dibujarSprite } from '../graficos/sprites.js';
 
 // entorno = { jugador: {x, y}, disparar(x, y, vy, vx) }
-export function crearEnemigo(tipo, x, y) {
+// `velocidad` multiplica la velocidad del tipo (las oleadas avanzadas son más rápidas).
+export function crearEnemigo(tipo, x, y, { velocidad = 1 } = {}) {
   const def = TIPOS_ENEMIGO[tipo];
   if (!def) throw new Error(`Tipo de enemigo desconocido: ${tipo}`);
+  const vel = def.vel * velocidad;
   const x0 = x;
   let t = 0;
   let enPuesto = 0;
@@ -27,18 +29,18 @@ export function crearEnemigo(tipo, x, y) {
       this.golpeado = Math.max(0, this.golpeado - dt);
 
       if (def.movimiento === 'zigzag') {
-        this.y += def.vel * dt;
+        this.y += vel * dt;
         this.x = x0 + Math.sin(t * def.frecuencia) * def.amplitud;
       } else if (def.movimiento === 'estacionar') {
         if (this.y < def.alturaFija) {
-          this.y = Math.min(def.alturaFija, this.y + def.vel * dt);
+          this.y = Math.min(def.alturaFija, this.y + vel * dt);
         } else if (enPuesto < def.permanencia) {
           enPuesto += dt;
         } else {
-          this.y += def.vel * dt;
+          this.y += vel * dt;
         }
       } else {
-        this.y += def.vel * dt;
+        this.y += vel * dt;
       }
 
       if (def.disparo) {

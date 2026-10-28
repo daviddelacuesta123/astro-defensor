@@ -76,3 +76,27 @@ test('las oleadas de prueba usan los tres tipos y están ordenadas por tiempo', 
     for (let i = 1; i < oleada.length; i++) assert.ok(oleada[i].t >= oleada[i - 1].t);
   }
 });
+
+test('con una función, las oleadas se generan una a una y sin fin', () => {
+  const pedidas = [];
+  const generar = (n) => { pedidas.push(n); return [e(0, 50 + n)]; };
+  const flota = crearFlota();
+  const director = crearDirector(generar, { pausa: 0 });
+  for (let i = 0; i < 3; i++) {
+    director.update(0.01, flota);
+    assert.equal(flota.lista[0].x, 50 + i, `la oleada ${i} usa lo generado para ella`);
+    flota.lista.length = 0;
+    director.update(0.01, flota);
+  }
+  director.update(0.01, flota);
+  assert.deepEqual([director.oleada, director.ciclo], [3, 0]);
+  assert.deepEqual(pedidas, [0, 1, 2, 3]);
+});
+
+test('el director crea cada enemigo con la velocidad de su aparición', () => {
+  const flota = crearFlota();
+  crearDirector([[{ t: 0, tipo: 'explorador', x: 100, vel: 2 }, e(0, 200)]]).update(0.01, flota);
+  flota.lista.forEach((en) => en.update(0.5, { jugador: { x: 0, y: 0 }, disparar() {} }));
+  const [rapido, normal] = flota.lista;
+  assert.ok(Math.abs((rapido.y + 20) - 2 * (normal.y + 20)) < 1e-9);
+});
