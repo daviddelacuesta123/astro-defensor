@@ -2,6 +2,7 @@ import { view } from './config.js';
 import { canvas, ctx, resize, beginFrame } from './render.js';
 import { clampDt } from './util.js';
 import { crearGestorEscenas } from './escenas/gestor.js';
+import { escenaCarga } from './escenas/carga.js';
 import { escenaJuego } from './escenas/juego.js';
 import { crearEstrellas } from './fondo/estrellas.js';
 import { crearEstadoPuntero } from './entrada/coordenadas.js';
@@ -15,8 +16,10 @@ conectarPuntero(canvas, puntero);
 
 const estrellas = crearEstrellas({ alto: view.H });
 const escenas = crearGestorEscenas();
+const irA = (nombre) => escenas.ir(nombre);
+escenas.registrar('carga', escenaCarga({ estrellas, puntero, irA }));
 escenas.registrar('juego', escenaJuego({ estrellas, puntero }));
-escenas.ir('juego');
+escenas.ir('carga');
 
 // Si la app pasa a segundo plano (llamada, cambio de app), la partida se pausa.
 document.addEventListener('visibilitychange', () => {
