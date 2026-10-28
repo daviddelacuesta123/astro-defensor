@@ -112,8 +112,11 @@ android/             proyecto Android de Capacitor (todavía SIN commitear, ver 
 | 13 | `guardado-progreso` | #12 | Solo el capítulo 1 al empezar; completar desbloquea el siguiente; mejor puntaje por capítulo; candados en el selector. Se adelantó a la 11 y la 12. |
 | 11 | `dialogos` | #13 | Diálogos con retrato antes y después de cada capítulo, texto letra por letra, SALTAR |
 | 12 | `jefes` | #14 | Un jefe por capítulo con alerta, barra de vida y fases; la Reina tiene 3 fases |
+| — | `easter-eggs` | #15 | Extra: 7 toques al logo del menú alternan la nave dorada; mantener 3 s "v1.0 · UPB" abre créditos ocultos |
 
 **Modo Historia:** es la misma escena `escenas/juego.js` con la opción `capitulos`, registrada como `'historia'` y abierta con `irA('historia', { capitulo: n })`. Con `conDialogos` (así está en `main.js`), el selector y SIGUIENTE pasan antes por `irA('dialogo', { capitulo, momento: 'antes' })`, y al completar se va a `momento: 'despues'`, que vuelve con `entrar({ reanudar: true })` a la pantalla final. Los capítulos (`datos/capitulos.js`) son `{ numero, nombre, zona, colorFondo, efectos: { camuflaje?, vision? }, oleadas }`. Al vaciar la última oleada la partida pasa a `'completada'` y la escena muestra "CAPÍTULO COMPLETADO" con SIGUIENTE y MENÚ.
+
+**Easter eggs (no los anuncies en la interfaz):** en el menú, tocar el logo 7 veces seguidas (menos de 1 s entre toques) desbloquea y luego alterna la nave dorada (`naveSecreta` y `naveDorada` en `guardado`); mantener presionado "v1.0 · UPB" 3 s abre la escena `creditos`. La lógica de los gestos está en `sistemas/secretos.js` y el texto de los créditos en `datos/creditos.js`.
 
 ## 6. Features pendientes, en orden
 
