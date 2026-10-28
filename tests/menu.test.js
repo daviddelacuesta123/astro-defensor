@@ -95,3 +95,88 @@ test('tocar fuera de los botones no suena', () => {
   escena.update(0.01);
   assert.deepEqual(sonidos, []);
 });
+
+// --- Easter eggs ---
+// Con el alto por defecto (640), el logo ocupa y ≈ 77–212 y la versión está en y = 620.
+const LOGO = [180, 140];
+const VERSION = [180, 620];
+
+function tocarEn(puntero, escena, [x, y], espera = 0.1) {
+  puntero.bajar(1, x, y);
+  puntero.subir(1);
+  escena.update(espera);
+}
+
+function mantenerEn(puntero, escena, [x, y], segundos) {
+  puntero.bajar(1, x, y);
+  for (let i = 0; i < Math.round(segundos / 0.01); i++) escena.update(0.01);
+  puntero.subir(1);
+  escena.update(0.01);
+}
+
+test('siete toques rápidos al logo desbloquean la nave dorada', () => {
+  const guardado = guardadoFalso();
+  const { escena, puntero, destinos, sonidos } = preparar(guardado);
+  escena.entrar();
+  for (let i = 0; i < 7; i++) tocarEn(puntero, escena, LOGO);
+  assert.equal(guardado.leerNumero('naveDorada'), 1);
+  assert.equal(guardado.leerNumero('naveSecreta'), 1);
+  assert.equal(escena.aviso.texto, 'NAVE SECRETA DESBLOQUEADA');
+  assert.deepEqual(sonidos, ['powerup']);
+  assert.deepEqual(destinos, []);
+});
+
+test('después de desbloquearla, siete toques más alternan entre la clásica y la dorada', () => {
+  const guardado = guardadoFalso({ naveSecreta: 1, naveDorada: 1 });
+  const { escena, puntero } = preparar(guardado);
+  escena.entrar();
+  for (let i = 0; i < 7; i++) tocarEn(puntero, escena, LOGO);
+  assert.equal(guardado.leerNumero('naveDorada'), 0);
+  assert.equal(escena.aviso.texto, 'NAVE CLÁSICA ACTIVADA');
+  for (let i = 0; i < 7; i++) tocarEn(puntero, escena, LOGO);
+  assert.equal(guardado.leerNumero('naveDorada'), 1);
+  assert.equal(escena.aviso.texto, 'NAVE DORADA ACTIVADA');
+});
+
+test('toques lentos al logo no activan nada', () => {
+  const guardado = guardadoFalso();
+  const { escena, puntero } = preparar(guardado);
+  escena.entrar();
+  for (let i = 0; i < 10; i++) tocarEn(puntero, escena, LOGO, 1.5);
+  assert.equal(guardado.leerNumero('naveDorada'), 0);
+  assert.equal(escena.aviso, null);
+});
+
+test('el aviso del secreto desaparece a los 2 s', () => {
+  const { escena, puntero } = preparar();
+  escena.entrar();
+  for (let i = 0; i < 7; i++) tocarEn(puntero, escena, LOGO);
+  for (let i = 0; i < 190; i++) escena.update(0.01);
+  assert.ok(escena.aviso);
+  for (let i = 0; i < 20; i++) escena.update(0.01);
+  assert.equal(escena.aviso, null);
+});
+
+test('mantener presionada la versión 3 s abre los créditos', () => {
+  const { escena, puntero, destinos, sonidos } = preparar();
+  escena.entrar();
+  mantenerEn(puntero, escena, VERSION, 3.1);
+  assert.deepEqual(destinos, ['creditos']);
+  assert.deepEqual(sonidos, ['powerup']);
+});
+
+test('soltar la versión antes de 3 s no abre los créditos', () => {
+  const { escena, puntero, destinos } = preparar();
+  escena.entrar();
+  mantenerEn(puntero, escena, VERSION, 2);
+  mantenerEn(puntero, escena, VERSION, 2);
+  assert.deepEqual(destinos, []);
+});
+
+test('mantener presionado fuera de la versión no abre los créditos', () => {
+  const { escena, puntero, destinos } = preparar();
+  escena.entrar();
+  mantenerEn(puntero, escena, [180, 560], 4);
+  mantenerEn(puntero, escena, [20, 620], 4);
+  assert.deepEqual(destinos, []);
+});

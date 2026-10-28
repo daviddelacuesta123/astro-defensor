@@ -52,8 +52,10 @@ function dibujarEscudo(ctx, x, y, t) {
 // La partida fantasma usa los defectos: no vibra ni suena.
 // En los capítulos, `repetir: false` hace que la partida se complete tras la última oleada
 // (o, si hay `jefe`, tras derrotarlo), y `camuflaje` lo aplica la flota (capítulo 3).
+// `sprite` es la nave que se dibuja (la dorada si el jugador la desbloqueó).
 export function crearPartida({
   oleadas, sensibilidad = 1, vibrar = () => {}, sonar = () => {}, repetir = true, camuflaje = null, jefe = null,
+  sprite = NAVE_AD7,
 }) {
   const jugador = crearJugador({ x: W / 2, y: view.H - 100 });
   const balas = crearBalas();
@@ -87,6 +89,7 @@ export function crearPartida({
     flota,
     balasEnemigas,
     powerups,
+    sprite,
     puntos: 0,
     // Número de oleada actual del director (desde 0).
     oleada: 0,
@@ -165,7 +168,7 @@ export function crearPartida({
         const visible = jugador.invulnerable === 0 || Math.floor(t * 12) % 2 === 0;
         if (visible) {
           dibujarLlama(ctx, jugador.x, jugador.y + 16);
-          dibujarSprite(ctx, NAVE_AD7, jugador.x, jugador.y);
+          dibujarSprite(ctx, sprite, jugador.x, jugador.y);
         }
         if (jugador.escudo) dibujarEscudo(ctx, jugador.x, jugador.y, t);
       }

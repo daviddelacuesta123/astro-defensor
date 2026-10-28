@@ -236,3 +236,9 @@ test('lo que invoca el jefe llega a la flota', () => {
   assert.ok(p.flota.lista.some((e) => e.tipo === 'asteroide'));
   assert.ok(p.flota.lista.length > antes);
 });
+
+test('la partida usa la nave clásica salvo que se le pase otra', async () => {
+  const { NAVE_AD7, NAVE_DORADA } = await import('../www/js/graficos/sprites.js');
+  assert.equal(crearPartida({ oleadas: SIN_OLEADAS }).sprite, NAVE_AD7);
+  assert.equal(crearPartida({ oleadas: SIN_OLEADAS, sprite: NAVE_DORADA }).sprite, NAVE_DORADA);
+});

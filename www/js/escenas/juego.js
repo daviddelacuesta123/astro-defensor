@@ -3,9 +3,11 @@ import { crearPartida } from '../sistemas/partida.js';
 import { crearBoton, dibujarBoton, dibujarVelo } from '../graficos/ui.js';
 import { dibujarHUD, dibujarBarraJefe } from '../graficos/hud.js';
 import { dibujarFondoZona, dibujarNebulosa } from '../graficos/zonas.js';
+import { NAVE_AD7, NAVE_DORADA } from '../graficos/sprites.js';
 
 const BOTON_PAUSA = crearBoton({ texto: 'PAUSA', x: W - 24, y: 24, ancho: 32, alto: 32 });
 const CLAVE_RECORD = 'recordLibre';
+const CLAVE_NAVE_DORADA = 'naveDorada';
 const DURACION_AVISO_OLEADA = 2;
 // El título del capítulo tiene más texto que el aviso de oleada: se deja más tiempo.
 const DURACION_TITULO = 3;
@@ -71,6 +73,8 @@ export function escenaJuego({
         repetir: !this.capitulo,
         camuflaje: this.capitulo?.efectos.camuflaje ?? null,
         jefe: this.capitulo?.jefe ?? null,
+        // Easter egg del menú: 7 toques al logo alternan la nave dorada.
+        sprite: guardado.leerNumero(CLAVE_NAVE_DORADA) === 1 ? NAVE_DORADA : NAVE_AD7,
       });
       this.estado = 'jugando';
       this.record = this.capitulo ? 0 : guardado.leerNumero(CLAVE_RECORD);

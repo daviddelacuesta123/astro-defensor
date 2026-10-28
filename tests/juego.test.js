@@ -360,3 +360,10 @@ test('modo libre: no hay jefe', () => {
   const { escena } = preparar();
   assert.equal(escena.partida.jefe, null);
 });
+
+test('con la nave dorada activada, la partida la usa', async () => {
+  const { NAVE_AD7, NAVE_DORADA } = await import('../www/js/graficos/sprites.js');
+  assert.equal(preparar(guardadoFalso({ naveDorada: 1 })).escena.partida.sprite, NAVE_DORADA);
+  assert.equal(preparar(guardadoFalso({ naveDorada: 0 })).escena.partida.sprite, NAVE_AD7);
+  assert.equal(preparar().escena.partida.sprite, NAVE_AD7);
+});

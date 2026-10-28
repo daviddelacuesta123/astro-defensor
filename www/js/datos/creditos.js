@@ -1,0 +1,25 @@
+// Créditos ocultos (easter egg: mantener presionado "v1.0 · UPB" en el menú).
+// estilo: 'titulo' | 'sub' | 'seccion' | 'nombre' | 'espacio'
+export const CREDITOS = [
+  { estilo: 'titulo', texto: 'ASTRO DEFENSOR' },
+  { estilo: 'sub', texto: 'LA ÚLTIMA SEÑAL' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'seccion', texto: 'UN JUEGO DE' },
+  { estilo: 'nombre', texto: 'DAVID DE LA CUESTA' },
+  { estilo: 'nombre', texto: 'SARA VALENTINA OCHOA' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'seccion', texto: 'APLICACIONES MÓVILES' },
+  { estilo: 'nombre', texto: 'UPB · 2026' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'seccion', texto: 'CON LA ACTUACIÓN DE' },
+  { estilo: 'nombre', texto: 'NOVA RÍOS' },
+  { estilo: 'sub', texto: 'PILOTO DEL AD-7 "DEFENSOR"' },
+  { estilo: 'nombre', texto: 'COMANDANTE IRIARTE' },
+  { estilo: 'nombre', texto: 'LA REINA DEL ENJAMBRE' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'sub', texto: 'HECHO CON CANVAS, JAVASCRIPT Y CAPACITOR' },
+  { estilo: 'sub', texto: 'SIN UNA SOLA IMAGEN NI SONIDO EXTERNO' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'espacio', texto: '' },
+  { estilo: 'titulo', texto: 'GRACIAS POR JUGAR' },
+];

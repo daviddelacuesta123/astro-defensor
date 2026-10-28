@@ -27,6 +27,12 @@ export const NAVE_AD7 = {
   ],
 };
 
+// Easter egg: la AD-7 en dorado (se alterna tocando 7 veces el logo del menú).
+export const NAVE_DORADA = {
+  ...NAVE_AD7,
+  paleta: { W: '#fff6c8', A: COLORS.warn, C: '#ff9a2a', B: '#8a5a1a', D: '#a07a30' },
+};
+
 // Enemigos del Enjambre Vex: miran hacia abajo, hacia el jugador.
 
 export const VEX_EXPLORADOR = {
