@@ -73,3 +73,25 @@ test('un enemigo con velocidad 1.5 se mueve 1.5 veces más rápido', () => {
   rapido.update(0.5, entorno());
   assert.ok(Math.abs(rapido.y - normal.y * 1.5) < 1e-9);
 });
+
+test('los asteroides bajan recto, lentos y sin disparar', () => {
+  for (const tipo of ['asteroide', 'asteroideGrande']) {
+    const disparos = [];
+    const a = crearEnemigo(tipo, 120, 0);
+    simular(a, 3, entorno(disparos));
+    assert.equal(a.x, 120, tipo);
+    assert.ok(TIPOS_ENEMIGO[tipo].vel < TIPOS_ENEMIGO.explorador.vel, tipo);
+    assert.deepEqual(disparos, [], tipo);
+  }
+});
+
+test('el asteroide grande casi no se puede destruir y no da puntos', () => {
+  const chico = TIPOS_ENEMIGO.asteroide;
+  const grande = TIPOS_ENEMIGO.asteroideGrande;
+  assert.ok(grande.vida >= 50);
+  assert.equal(grande.puntos, 0);
+  assert.ok(grande.ancho > chico.ancho);
+  // Romper una roca cuesta varios disparos y vale menos que un explorador.
+  assert.ok(chico.vida > TIPOS_ENEMIGO.tirador.vida);
+  assert.ok(chico.puntos < TIPOS_ENEMIGO.explorador.puntos);
+});

@@ -14,7 +14,10 @@ const DURACION_DESTELLO = 0.3;
 // Milisegundos de vibración al perder una vida y al perder la última.
 const VIBRA_GOLPE = 120;
 const VIBRA_MUERTE = 400;
-const COLOR_EXPLOSION = { explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn };
+const COLOR_EXPLOSION = {
+  explorador: COLORS.danger, zigzag: COLORS.pink, tirador: COLORS.warn,
+  asteroide: COLORS.dim, asteroideGrande: COLORS.dim,
+};
 
 // Llama del propulsor: dos chorros bajo los motores que parpadean.
 function dibujarLlama(ctx, x, y) {

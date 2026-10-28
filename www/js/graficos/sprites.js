@@ -76,10 +76,49 @@ export const VEX_TIRADOR = {
   ],
 };
 
+// Asteroides del cinturón: grises, con cráteres oscuros y el borde iluminado.
+const PALETA_ROCA = { G: '#6b7186', D: '#3d4256', L: '#a3a9bd' };
+
+export const ASTEROIDE = {
+  escala: 3,
+  paleta: PALETA_ROCA,
+  filas: [
+    '..GGGG..',
+    '.GLLGGG.',
+    'GLLGGDGG',
+    'GLGGGDDG',
+    'GGGDGGGG',
+    'GGDDGGLG',
+    '.GGGGGG.',
+    '..GGG...',
+  ],
+};
+
+export const ASTEROIDE_GRANDE = {
+  escala: 3,
+  paleta: PALETA_ROCA,
+  filas: [
+    '....GGGG....',
+    '..GGLLGGGG..',
+    '.GLLLGGGDGG.',
+    '.GLLGGGGDDG.',
+    'GGLGGDGGGGGG',
+    'GGGGDDDGGLGG',
+    'GGGGGDGGGGGG',
+    'GDDGGGGGGDGG',
+    'GDDDGGLGGDDG',
+    '.GDGGGGGGGG.',
+    '..GGGGDGGG..',
+    '....GGGG....',
+  ],
+};
+
 export const SPRITES_ENEMIGO = {
   explorador: VEX_EXPLORADOR,
   zigzag: VEX_ZIGZAG,
   tirador: VEX_TIRADOR,
+  asteroide: ASTEROIDE,
+  asteroideGrande: ASTEROIDE_GRANDE,
 };
 
 // Dibuja el sprite centrado en (x, y). Con `colorUnico` pinta todo de ese color (destello al recibir daño).
