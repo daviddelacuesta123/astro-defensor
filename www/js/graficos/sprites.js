@@ -82,8 +82,8 @@ export const SPRITES_ENEMIGO = {
   tirador: VEX_TIRADOR,
 };
 
-// Dibuja el sprite centrado en (x, y).
-export function dibujarSprite(ctx, sprite, x, y) {
+// Dibuja el sprite centrado en (x, y). Con `colorUnico` pinta todo de ese color (destello al recibir daño).
+export function dibujarSprite(ctx, sprite, x, y, colorUnico) {
   const { filas, paleta, escala } = sprite;
   const x0 = Math.round(x - filas[0].length * escala / 2);
   const y0 = Math.round(y - filas.length * escala / 2);
@@ -91,7 +91,7 @@ export function dibujarSprite(ctx, sprite, x, y) {
     for (let fx = 0; fx < fila.length; fx++) {
       const ch = fila[fx];
       if (ch === '.') continue;
-      ctx.fillStyle = paleta[ch];
+      ctx.fillStyle = colorUnico ?? paleta[ch];
       ctx.fillRect(x0 + fx * escala, y0 + fy * escala, escala, escala);
     }
   });

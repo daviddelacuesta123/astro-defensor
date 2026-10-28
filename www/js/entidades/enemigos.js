@@ -1,3 +1,4 @@
+import { COLORS } from '../config.js';
 import { TIPOS_ENEMIGO } from '../datos/enemigos.js';
 import { apuntar } from '../util.js';
 import { SPRITES_ENEMIGO, dibujarSprite } from '../graficos/sprites.js';
@@ -19,9 +20,11 @@ export function crearEnemigo(tipo, x, y) {
     puntos: def.puntos,
     ancho: def.ancho,
     alto: def.alto,
+    golpeado: 0,
 
     update(dt, entorno) {
       t += dt;
+      this.golpeado = Math.max(0, this.golpeado - dt);
 
       if (def.movimiento === 'zigzag') {
         this.y += def.vel * dt;
@@ -69,7 +72,9 @@ export function crearFlota() {
     },
 
     draw(ctx) {
-      for (const e of lista) dibujarSprite(ctx, SPRITES_ENEMIGO[e.tipo], e.x, e.y);
+      for (const e of lista) {
+        dibujarSprite(ctx, SPRITES_ENEMIGO[e.tipo], e.x, e.y, e.golpeado > 0 ? COLORS.text : undefined);
+      }
     },
   };
 }
