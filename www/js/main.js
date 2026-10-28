@@ -13,6 +13,7 @@ import { OLEADAS_PRUEBA } from './datos/oleadas.js';
 import { generarOleada } from './sistemas/generador.js';
 import { crearGuardado, obtenerAlmacen } from './sistemas/guardado.js';
 import { crearConfiguracion } from './sistemas/configuracion.js';
+import { crearProgreso } from './sistemas/progreso.js';
 import { crearVibrador } from './sistemas/vibracion.js';
 import { crearAudio } from './sistemas/audio.js';
 import { crearEstrellas } from './fondo/estrellas.js';
@@ -27,6 +28,7 @@ conectarPuntero(canvas, puntero);
 
 const guardado = crearGuardado(obtenerAlmacen());
 const configuracion = crearConfiguracion(guardado);
+const progreso = crearProgreso(guardado, CAPITULOS.length);
 // navigator.vibrate no existe en todos los navegadores (por ejemplo, en iOS).
 const vibrar = crearVibrador(configuracion, (ms) => navigator.vibrate?.(ms));
 // Si el navegador no tiene Web Audio, `new` lanza error y el audio queda en silencio.
@@ -56,7 +58,9 @@ const juego = escenaJuego({
 });
 escenas.registrar('juego', juego);
 // El Modo Historia es la misma escena de juego, con los capítulos en lugar de oleadas infinitas.
-const historia = escenaJuego({ estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS });
+const historia = escenaJuego({
+  estrellas, puntero, irA, guardado, configuracion, vibrar, sonar, capitulos: CAPITULOS, progreso,
+});
 escenas.registrar('historia', historia);
 // Escenas con partida: en pausa, la música calla.
 const partidas = { juego, historia };

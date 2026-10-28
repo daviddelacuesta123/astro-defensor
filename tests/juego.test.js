@@ -145,7 +145,7 @@ test('la partida del juego suena', () => {
 // Modo Historia: la misma escena con la opción `capitulos`.
 const { CAPITULOS } = await import('../www/js/datos/capitulos.js');
 
-function prepararHistoria(capitulo, guardado = guardadoFalso()) {
+function prepararHistoria(capitulo, guardado = guardadoFalso(), progreso = undefined) {
   const destinos = [];
   const puntero = crearEstadoPuntero();
   const escena = escenaJuego({
@@ -154,6 +154,7 @@ function prepararHistoria(capitulo, guardado = guardadoFalso()) {
     irA: (nombre) => destinos.push(nombre),
     guardado,
     capitulos: CAPITULOS,
+    progreso,
   });
   escena.entrar({ capitulo });
   const textos = () => escena.botones().map((b) => b.texto);
@@ -250,4 +251,34 @@ test('modo libre: entrar sin parámetros sigue funcionando', () => {
   assert.equal(escena.capitulo, null);
   escena.entrar(undefined);
   assert.equal(escena.estado, 'jugando');
+});
+
+const { crearProgreso } = await import('../www/js/sistemas/progreso.js');
+
+test('historia: completar un capítulo desbloquea el siguiente y guarda el mejor puntaje', () => {
+  const guardado = guardadoFalso();
+  const progreso = crearProgreso(guardado);
+  const { escena, completar } = prepararHistoria(1, guardado, progreso);
+  escena.partida.puntos = 2500;
+  completar();
+  assert.deepEqual(escena.resultado, { nuevoMejor: true, desbloqueado: 2 });
+  assert.equal(progreso.desbloqueado(2), true);
+  assert.equal(progreso.mejor(1), 2500);
+});
+
+test('historia: perder no desbloquea nada', () => {
+  const guardado = guardadoFalso();
+  const progreso = crearProgreso(guardado);
+  const { escena } = prepararHistoria(1, guardado, progreso);
+  perderCon(escena, 9000);
+  assert.equal(progreso.capituloMax(), 1);
+  assert.equal(progreso.mejor(1), 0);
+});
+
+test('historia: entrar a un capítulo nuevo borra el resultado del anterior', () => {
+  const guardado = guardadoFalso();
+  const { escena, completar, tocarBoton } = prepararHistoria(1, guardado, crearProgreso(guardado));
+  completar();
+  tocarBoton('SIGUIENTE');
+  assert.equal(escena.resultado, null);
 });
