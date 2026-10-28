@@ -16,7 +16,7 @@ function guardadoFalso(datos = {}) {
   });
 }
 
-function preparar(datos = {}) {
+function preparar(datos = {}, extra = {}) {
   const destinos = [];
   const sonidos = [];
   const puntero = crearEstadoPuntero();
@@ -28,6 +28,7 @@ function preparar(datos = {}) {
     capitulos: CAPITULOS,
     progreso: crearProgreso(guardadoFalso(datos)),
     sonar: (nombre) => sonidos.push(nombre),
+    ...extra,
   });
   escena.entrar();
   const textos = () => escena.botones().map((b) => b.texto);
@@ -127,4 +128,10 @@ test('el selector se entera del progreso nuevo al volver a entrar', () => {
   progreso.completar(1, 100);
   escena.entrar();
   assert.deepEqual(bloqueados(escena), [false, false, true, true, true]);
+});
+
+test('con diálogos, elegir un capítulo abre primero su diálogo de antes', () => {
+  const { destinos, tocar } = preparar({ capituloMax: 2 }, { conDialogos: true });
+  tocar('2  CINTURÓN DE ASTEROIDES');
+  assert.deepEqual(destinos, [['dialogo', { capitulo: 2, momento: 'antes' }]]);
 });

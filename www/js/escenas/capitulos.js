@@ -43,8 +43,11 @@ function dibujarCapitulo(ctx, b) {
 }
 
 // Selector del Modo Historia sobre la partida fantasma. Solo se puede entrar a los
-// capítulos desbloqueados: sin haber jugado, únicamente al 1.
-export function escenaCapitulos({ estrellas, puntero, irA, fantasma, capitulos, progreso, sonar = () => {} }) {
+// capítulos desbloqueados: sin haber jugado, únicamente al 1. Con `conDialogos`, cada
+// capítulo empieza por su diálogo de antes.
+export function escenaCapitulos({
+  estrellas, puntero, irA, fantasma, capitulos, progreso, conDialogos = false, sonar = () => {},
+}) {
   // Estado de cada capítulo, leído del guardado al entrar (no en cada cuadro).
   let estados = [];
 
@@ -87,8 +90,9 @@ export function escenaCapitulos({ estrellas, puntero, irA, fantasma, capitulos, 
           this.aviso = { texto: 'COMPLETA EL CAPÍTULO ANTERIOR', restante: DURACION_AVISO };
           continue;
         }
-        if (tocado.capitulo) irA('historia', { capitulo: tocado.capitulo });
-        else irA('menu');
+        if (!tocado.capitulo) irA('menu');
+        else if (conDialogos) irA('dialogo', { capitulo: tocado.capitulo, momento: 'antes' });
+        else irA('historia', { capitulo: tocado.capitulo });
         return;
       }
 
