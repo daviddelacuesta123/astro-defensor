@@ -122,3 +122,45 @@ test('la bomba suena una vez y no explota cada enemigo por separado', () => {
   assert.equal(cuantos(sonidos, 'explosion'), 0);
   assert.equal(p.flota.lista.length, 0);
 });
+
+test('sin repetir, la partida se completa al terminar la última oleada', () => {
+  const p = crearPartida({ oleadas: [[{ t: 0, tipo: 'explorador', x: 180 }]], repetir: false });
+  p.update(0.01, quieto);
+  p.flota.lista.length = 0;
+  simular(p, 2.5);
+  assert.equal(p.estado, 'completada');
+  const vidas = p.jugador.vidas;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  assert.equal(p.jugador.vidas, vidas, 'completada ya no recibe golpes');
+});
+
+test('con repetir (por defecto) la partida nunca se completa', () => {
+  const p = crearPartida({ oleadas: [[{ t: 0, tipo: 'explorador', x: 180 }]] });
+  for (let i = 0; i < 3; i++) {
+    p.update(0.01, quieto);
+    p.flota.lista.length = 0;
+    simular(p, 2.5);
+  }
+  assert.equal(p.estado, 'jugando');
+});
+
+test('morir en la pausa final no completa el capítulo', () => {
+  const p = crearPartida({ oleadas: [[{ t: 0, tipo: 'explorador', x: 180 }]], repetir: false });
+  p.update(0.01, quieto);
+  p.flota.lista.length = 0;
+  p.update(0.01, quieto);
+  p.jugador.vidas = 1;
+  p.balasEnemigas.disparar(p.jugador.x, p.jugador.y, 0);
+  p.update(0.01, quieto);
+  simular(p, 3);
+  assert.equal(p.estado, 'terminada');
+});
+
+test('el camuflaje de la partida llega a la flota', () => {
+  const p = crearPartida({ oleadas: SIN_OLEADAS, camuflaje: { ciclo: 3, oculto: 3 } });
+  const e = crearEnemigo('tirador', 100, 100);
+  p.flota.agregar(e);
+  p.update(0.01, quieto);
+  assert.equal(p.flota.oculto(e), true);
+});
