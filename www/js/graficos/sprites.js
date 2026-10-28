@@ -121,6 +121,127 @@ export const SPRITES_ENEMIGO = {
   asteroideGrande: ASTEROIDE_GRANDE,
 };
 
+// Jefes (30 columnas a escala 3): uno por capítulo. Cada uno tiene una variante por fase;
+// al enfurecerse cambia de color para que se note el cambio de fase.
+const JEFE_CRUCERO = {
+  escala: 3,
+  paleta: { R: COLORS.danger, K: '#3a0a14', Y: COLORS.warn },
+  filas: [
+    '..RR......................RR..',
+    '.RRRR....................RRRR.',
+    'RRRRRR..RRRRRRRRRRRRRR..RRRRRR',
+    'RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR',
+    '.RRRRRRRKKKKKKKKKKKKKKRRRRRRR.',
+    '..RRRRRKKYYKKKKKKKKYYKKRRRRR..',
+    '..RRRRKKYYYYKKKKKKYYYYKKRRRR..',
+    '...RRRKKKYYKKKKKKKKYYKKKRRR...',
+    '...RRRRKKKKKKKKKKKKKKKKRRRR...',
+    '....RRRRRRRRRRRRRRRRRRRRRR....',
+    '.....RR.RRRRRRRRRRRRRR.RR.....',
+    '.....R...RRRRRRRRRRRR...R.....',
+    '..........RR.RRRR.RR..........',
+    '..........R...RR...R..........',
+  ],
+};
+
+const JEFE_MINERO = {
+  escala: 3,
+  paleta: { G: '#6b7186', D: '#3d4256', B: '#8a5a2a', Y: COLORS.warn },
+  filas: [
+    '......YY..............YY......',
+    '.....YYYY............YYYY.....',
+    '..GGGGGGGGGGGGGGGGGGGGGGGGGG..',
+    '.GGDDGGGGGGGGGGGGGGGGGGGGDDGG.',
+    'GGDDDDGGGBBBBBBBBBBBBGGGDDDDGG',
+    'GGDDDDGGBBYYBBBBBBYYBBGGDDDDGG',
+    'GGGDDGGGBYYYYBBBBYYYYBGGGDDGGG',
+    '.GGGGGGGBBYYBBBBBBYYBBGGGGGGG.',
+    '..GGGGGGGBBBBBBBBBBBBGGGGGGG..',
+    '..GG..GGGGGGGGGGGGGGGGGG..GG..',
+    '.GG....GGG..GGGGGG..GGG....GG.',
+    'GG......G....GGGG....G......GG',
+    'G.............GG.............G',
+  ],
+};
+
+const JEFE_ACECHADOR = {
+  escala: 3,
+  paleta: { P: COLORS.pink, M: '#5a1a4a', W: COLORS.text },
+  filas: [
+    'P............................P',
+    'PP..........................PP',
+    '.PP.....PPPPPPPPPPPPPP.....PP.',
+    '..PPPPPPPMMMMMMMMMMMMPPPPPPP..',
+    '...PPPPMMMMMMMMMMMMMMMMPPPP...',
+    '....PPMMMWWMMMMMMMMWWMMMPP....',
+    '....PMMMWWWWMMMMMMWWWWMMMP....',
+    '....PPMMMWWMMMMMMMMWWMMMPP....',
+    '...PPPPMMMMMMMMMMMMMMMMPPPP...',
+    '..PPPPPPPMMMMMMMMMMMMPPPPPPP..',
+    '.PP.....PPPPPPPPPPPPPP.....PP.',
+    'PP.......PP..PPPP..PP.......PP',
+    'P.........P...PP...P.........P',
+  ],
+};
+
+const JEFE_ACORAZADO = {
+  escala: 3,
+  paleta: { S: '#4a5578', R: COLORS.danger, K: '#3a0a14', Y: COLORS.warn },
+  filas: [
+    '....YY..................YY....',
+    '....YY..................YY....',
+    '..SSSSSSSSSSSSSSSSSSSSSSSSSS..',
+    '.SSSSSSSSSSSSSSSSSSSSSSSSSSSS.',
+    'SSRRSSSSSRRRRRRRRRRRRSSSSSRRSS',
+    'SRRRRSSSRRKKKKRRKKKKRRSSSRRRRS',
+    'SRRRRSSRRKKYYKKKKYYKKRRSSRRRRS',
+    'SSRRSSSRRKKYYKKKKYYKKRRSSSRRSS',
+    'SSSSSSSSRRKKKKRRKKKKRRSSSSSSSS',
+    '.SSSSSSSSRRRRRRRRRRRRSSSSSSSS.',
+    '..SSSSSSSSSSSSSSSSSSSSSSSSSS..',
+    '...SS..SS..SS....SS..SS..SS...',
+    '...SS..SS..SS....SS..SS..SS...',
+  ],
+};
+
+const JEFE_REINA = {
+  escala: 3,
+  paleta: { R: COLORS.danger, Y: COLORS.warn, K: '#3a0a14', P: COLORS.pink },
+  filas: [
+    '.......Y.....Y..Y.....Y.......',
+    '......YYY...YYYYYY...YYY......',
+    '.......YYYYYYYYYYYYYYYY.......',
+    '..R.....RRRRRRRRRRRRRR.....R..',
+    '.RR...RRRRRRRRRRRRRRRRRR...RR.',
+    'RRR..RRKKRRRRRRRRRRRRKKRR..RRR',
+    'RRRRRRRKYYRRRRRRRRRRYYKRRRRRRR',
+    '.RRRRRRKKRRRRRRRRRRRRKKRRRRRR.',
+    '..RRRRRRRRRKKKKKKKKRRRRRRRRR..',
+    '...PPRRRRRKYKYKKYKYKRRRRRPP...',
+    '..PP.PRRRRRKKKKKKKKRRRRRP.PP..',
+    '.PP..PPRRRRRRRRRRRRRRRRPP..PP.',
+    'PP....PP.RRRRRRRRRRRR.PP....PP',
+    'P......P..RR.RRRR.RR..P......P',
+    '.........R...R..R...R.........',
+  ],
+};
+
+// Misma figura con otros colores (para las fases).
+const recolorear = (sprite, cambios) => ({ ...sprite, paleta: { ...sprite.paleta, ...cambios } });
+
+export const SPRITES_JEFE = {
+  crucero: [JEFE_CRUCERO, recolorear(JEFE_CRUCERO, { R: '#ff7a3a' })],
+  minero: [JEFE_MINERO, recolorear(JEFE_MINERO, { B: COLORS.danger })],
+  acechador: [JEFE_ACECHADOR, recolorear(JEFE_ACECHADOR, { W: COLORS.danger })],
+  acorazado: [JEFE_ACORAZADO, recolorear(JEFE_ACORAZADO, { S: '#7a3a4a' })],
+  // La Reina se enciende con cada fase: roja, rosada y por último dorada.
+  reina: [
+    JEFE_REINA,
+    recolorear(JEFE_REINA, { R: COLORS.pink, P: COLORS.danger }),
+    recolorear(JEFE_REINA, { R: COLORS.warn, Y: COLORS.text, P: COLORS.danger }),
+  ],
+};
+
 // Retratos de los diálogos (16×16). Nova con su casco cian, Iriarte con gorra y uniforme,
 // y la Reina del Enjambre con la corona y los colores Vex.
 const PIEL = '#e8b48c';

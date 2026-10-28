@@ -41,3 +41,17 @@ test('hay un retrato de 16×16 para cada personaje que habla', () => {
     assert.equal(r.filas[0].length, 16, quien);
   }
 });
+
+test('cada jefe tiene un sprite por fase, del mismo tamaño que su caja', async () => {
+  const { TIPOS_JEFE } = await import('../www/js/datos/jefes.js');
+  for (const [tipo, def] of Object.entries(TIPOS_JEFE)) {
+    const variantes = sprites.SPRITES_JEFE?.[tipo];
+    assert.ok(variantes, `falta sprite para ${tipo}`);
+    assert.equal(variantes.length, def.fases.length + 1, `una variante por fase de ${tipo}`);
+    for (const s of variantes) {
+      assert.equal(s.filas[0].length * s.escala, def.ancho, `ancho de ${tipo}`);
+      assert.equal(s.filas.length * s.escala, def.alto, `alto de ${tipo}`);
+      for (const ch of s.filas.join('')) assert.ok(ch === '.' || ch in s.paleta, `${tipo}: "${ch}"`);
+    }
+  }
+});
