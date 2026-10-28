@@ -5,8 +5,9 @@ const DIRECCIONES = {
   ArrowUp: [0, -1], KeyW: [0, -1],
   ArrowDown: [0, 1], KeyS: [0, 1],
 };
-// Hasta dónde "adelanta" el dedo virtual a la nave: con el suavizado del jugador da una velocidad cómoda.
-const ALCANCE = 70;
+// Hasta dónde "adelanta" el dedo virtual a la nave. Con el suavizado del jugador da unas
+// 250 unidades por segundo: cruzar la pantalla toma cerca de 1,5 s.
+const ALCANCE = 16;
 // Mismo desfase que usa la nave respecto al dedo (entidades/jugador.js).
 const DESFASE_DEDO = 60;
 

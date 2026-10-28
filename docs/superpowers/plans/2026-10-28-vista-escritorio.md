@@ -41,7 +41,7 @@
 
 **Interfaces:** `crearTeclado() -> { presionar(codigo) -> boolean, soltar(codigo), soltarTodo(), direccion() -> { dx, dy }, dedoVirtual(jugador) -> { activo, x, y } | null }`.
 - Flechas y WASD; `presionar` devuelve si la tecla es de movimiento (para `preventDefault`).
-- `dedoVirtual`: null sin teclas; si no, apunta 70 unidades en la dirección pedida desde la nave, más los 60 de desfase del dedo.
+- `dedoVirtual`: null sin teclas; si no, apunta 16 unidades en la dirección pedida desde la nave, más los 60 de desfase del dedo.
 
 ### Task 3: Teclado en el juego
 

@@ -40,14 +40,14 @@ test('soltarTodo detiene la nave (por ejemplo, al perder el foco)', () => {
   assert.equal(t.dedoVirtual({ x: 180, y: 500 }), null);
 });
 
-test('el dedo virtual apunta 70 unidades hacia donde se pide, con el desfase del dedo', () => {
+test('el dedo virtual apunta 16 unidades hacia donde se pide, con el desfase del dedo', () => {
   const t = crearTeclado();
   const nave = { x: 180, y: 500 };
   assert.equal(t.dedoVirtual(nave), null);
   t.presionar('ArrowLeft');
-  assert.deepEqual(t.dedoVirtual(nave), { activo: true, x: 110, y: 560 });
+  assert.deepEqual(t.dedoVirtual(nave), { activo: true, x: 164, y: 560 });
   t.presionar('ArrowUp');
   const d = t.dedoVirtual(nave);
-  assert.ok(Math.abs(d.x - (180 - 70 / Math.SQRT2)) < 1e-9, 'en diagonal no va más rápido');
-  assert.ok(Math.abs(d.y - (560 - 70 / Math.SQRT2)) < 1e-9);
+  assert.ok(Math.abs(d.x - (180 - 16 / Math.SQRT2)) < 1e-9, 'en diagonal no va más rápido');
+  assert.ok(Math.abs(d.y - (560 - 16 / Math.SQRT2)) < 1e-9);
 });
